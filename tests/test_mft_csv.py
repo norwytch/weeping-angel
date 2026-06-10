@@ -22,6 +22,20 @@ def test_parse_filetime_blank_is_none():
     assert parse_filetime(None) is None
 
 
+def test_parse_filetime_malformed_is_none():
+    assert parse_filetime("not-a-timestamp") is None
+    assert parse_filetime("2024-13-99 99:99:99") is None
+
+
+def test_parse_filetime_overlong_fraction_is_clamped():
+    # A hostile cell with a huge fractional string must not trigger a giant
+    # bignum exponentiation; it is clamped to FILETIME's 7 digits (LOW-1).
+    clamped = parse_filetime("2024-03-10 14:02:11." + "1" * 100_000)
+    seven = parse_filetime("2024-03-10 14:02:11.1111111")
+    assert clamped is not None and seven is not None
+    assert clamped == seven
+
+
 def test_stomped_file_flagged_on_real_mft_columns():
     results = scan_csv(str(SAMPLE))
     evil = rules(results["evil.exe"])

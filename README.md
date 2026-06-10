@@ -1,5 +1,10 @@
 # Weeping Angel
 
+[![CI](https://github.com/norwytch/weeping-angel/actions/workflows/ci.yml/badge.svg)](https://github.com/norwytch/weeping-angel/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![MITRE ATT&CK](https://img.shields.io/badge/ATT%26CK-T1070.006-red.svg)](https://attack.mitre.org/techniques/T1070/006/)
+
 Detecting timestomping malware that acts only when it believes it is unobserved.
 
 In the classic British sci-fi series Doctor Who, a Weeping Angel is an entity that can only move when it is not being observed. Under direct observation, it must remain in the form of a graveyard statue, perfectly still. When freed from observation, Weeping Angels can move faster than light through space in order to reach their victims and feed off their "temporal energy," including movement through digital signal networks. This means that Weeping Angels could also potentially be used for malware. 
@@ -55,7 +60,7 @@ git clone <this repo> && cd weeping_angel
 python examples/demo.py                       # narrated walkthrough of the scenarios
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
-pip install -e ".[test]" && pytest -q         # 47 tests
+pip install -e ".[test]" && pytest -q         # 49 tests
 ```
 
 ## Facing the Angels
@@ -174,7 +179,7 @@ quantumlock/            # the package: detection logic and the simulation that e
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 47 tests, incl. Hypothesis property tests
+tests/                  # 49 tests, incl. Hypothesis property tests
 ```
 
 ## License
