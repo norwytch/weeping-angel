@@ -168,6 +168,19 @@ each witness is spelled out in
   an allowlist of known-legitimate setters (`trusted_setinfo_actors`), matched
   on the recorder-supplied image path or signer, not a spoofable name.
 
+## Kaggle
+
+The arena is also packaged as a
+[kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation in
+[`kaggle/`](kaggle/), with a runnable notebook
+([`kaggle/weeping_angel_arena.ipynb`](kaggle/weeping_angel_arena.ipynb)) that
+installs the env, plays an episode, and scores the built-in agents against each
+other.
+
+- On Kaggle: <!-- replace with your published notebook URL -->
+  https://www.kaggle.com/code/norwytch/weeping-angel-arena
+- Locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
+
 ## Layout
 
 ```
