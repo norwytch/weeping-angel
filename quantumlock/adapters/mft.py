@@ -175,10 +175,27 @@ def scan_mft(
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
+    fmt = None
+    if "--format" in argv:
+        i = argv.index("--format")
+        if i + 1 >= len(argv):
+            print("usage: python -m quantumlock.adapters.mft <mft-image> [--format ecs|ocsf]")
+            return 2
+        fmt = argv[i + 1]
+        del argv[i : i + 2]
     if not argv:
-        print("usage: python -m quantumlock.adapters.mft <mft-image>")
+        print("usage: python -m quantumlock.adapters.mft <mft-image> [--format ecs|ocsf]")
         return 2
     results = scan_mft(argv[0])
+
+    if fmt:  # SIEM-ready output for a detection pipeline
+        from ..export import to_jsonl
+
+        all_findings = [f for fs in results.values() for f in fs]
+        if all_findings:
+            print(to_jsonl(all_findings, schema=fmt))
+        return 0
+
     flagged = {fid: fs for fid, fs in results.items() if fs}
     print(f"Parsed {len(results)} record(s); {len(flagged)} with timestomp indicators.\n")
     for fid, findings in flagged.items():

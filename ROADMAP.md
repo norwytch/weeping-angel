@@ -26,6 +26,9 @@ strict priority. Rough effort is noted as S/M/L.
 - Terraform test range (`range/`): Docker-provider config that provisions a
   fleet of recorder containers, with a scenario harness that injects timestomps
   and scans the collected ledgers. (Priority 3)
+- Findings exporter (`quantumlock/export.py`): renders findings as ECS or OCSF
+  Detection Findings (with the ATT&CK mapping) for SIEM ingestion; the MFT
+  adapter has a `--format ecs|ocsf` flag. (Priority 4)
 - CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
   security review (LOW-1/LOW-3 fixed).
 
@@ -57,11 +60,11 @@ injects a timestomp on each and scans the collected ledgers. `terraform
 fmt`/`validate` run in CI. Follow-ups: a cloud-VM variant, and exercising it
 against a live daemon in CI (validate-only today).
 
-### 4. Platform integration: OCSF/ECS exporter (S)
+### 4. Platform integration: OCSF/ECS exporter — DONE
 
-Emit findings as an OCSF "Detection Finding" (or ECS JSON) so they drop straight
-into a SIEM or an autonomous-response platform. On-message with the response
-layer, but cosmetic next to 1-3. (Also tracked under Output and UX below.)
+Shipped as `quantumlock/export.py` (see Done above): `ecs_event`, `ocsf_finding`,
+and `to_jsonl` render findings (with the ATT&CK mapping) for SIEM ingestion; the
+MFT adapter emits them with `--format ecs|ocsf`.
 
 ## Detection depth
 
@@ -89,7 +92,6 @@ layer, but cosmetic next to 1-3. (Also tracked under Output and UX below.)
   exit codes, JSONL for SIEM ingestion. (S)
 - Timeline visualization (matplotlib or HTML): forged vs true timeline with the
   divergence highlighted. One screenshot for the README/social preview. (M)
-- Emit findings to a standard schema (ECS or OCSF) for SIEM ingestion. (S)
 
 ## Arena and competition
 

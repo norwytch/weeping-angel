@@ -61,7 +61,7 @@ python examples/demo.py                       # narrated walkthrough of the scen
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
-pip install -e ".[test]" && pytest -q         # 81 tests
+pip install -e ".[test]" && pytest -q         # 88 tests
 ```
 
 ## Facing the Angels
@@ -139,6 +139,9 @@ Working, tested code in this repo (Python, plus Go for the recorder):
   findings into bounded actions (alert/ticket/quarantine/isolate), dry-run by
   default, gated on corroboration-based confidence, every decision logged to the
   tamper-evident ledger.
+- `quantumlock/export.py`, renders findings as ECS or OCSF Detection Findings
+  (with the ATT&CK mapping) for SIEM ingestion;
+  `python -m quantumlock.adapters.mft <mft> --format ecs|ocsf` emits JSONL.
 - `quantumlock/paradox.py`, the observed/unobserved state machine with an
   unreachability proof.
 - `quantumlock/simulator.py`, a deterministic filesystem and Angel simulator.
@@ -201,6 +204,7 @@ quantumlock/            # the package: detection logic and the simulation that e
   paradox.py            # observed/unobserved state machine + unreachability proof
   simulator.py          # filesystem sim, observation oracle, Angel agents
   response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
+  export.py             # render findings as ECS / OCSF for SIEM ingestion
   efficacy.py           # precision/recall harness over a labeled corpus
   arena.py              # adversarial Angels-vs-recorder game (coverage budget)
   adapters/windows.py   # design-only real-artifact adapters
@@ -212,7 +216,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 81 tests, incl. Hypothesis property tests
+tests/                  # 88 tests, incl. Hypothesis property tests
 ```
 
 ## License

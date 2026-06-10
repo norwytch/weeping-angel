@@ -8,6 +8,7 @@ moment it can act is the moment it is most completely recorded.
 
 from .anchor import Anchor, AnchorVerifyResult, Checkpoint
 from .detector import DivergenceDetector, Finding
+from .export import ecs_event, ocsf_finding, to_jsonl
 from .ledger import Ledger, Record, VerifyResult
 from .paradox import Outcome, ParadoxProof, WorldState, prove_no_paradox_free_move, step
 from .response import Action, ResponseDecision, ResponsePolicy, RulesOfEngagement, confidence
@@ -42,5 +43,8 @@ __all__ = [
     "ResponsePolicy",
     "ResponseDecision",
     "confidence",
+    "ecs_event",
+    "ocsf_finding",
+    "to_jsonl",
 ]
 __version__ = "0.1.0"
