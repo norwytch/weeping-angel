@@ -23,7 +23,11 @@ strict priority. Rough effort is noted as S/M/L.
 - Go recorder (`recorder/`): out-of-band host collector that builds the same
   hash chain and shared JSONL ledger the Python detector reads; Go and Python
   compute byte-identical SHA-256 chains, verified both directions. (Priority 1)
-- CI (ruff, mypy, bandit, pytest; plus go vet/test), security review (LOW-1/LOW-3 fixed).
+- Terraform test range (`range/`): Docker-provider config that provisions a
+  fleet of recorder containers, with a scenario harness that injects timestomps
+  and scans the collected ledgers. (Priority 3)
+- CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
+  security review (LOW-1/LOW-3 fixed).
 
 ## Near-term priorities
 
@@ -45,14 +49,13 @@ findings to a bounded action under an RoE config, dry-run by default, gated on
 corroboration-based confidence, with every decision appended to the
 tamper-evident ledger.
 
-### 3. Terraform range (M-L)
+### 3. Terraform range — DONE
 
-Stand up a real test range with `range/`: Terraform that provisions a few hosts
-(Docker provider runs locally; cloud VMs optional), deploys the Go recorder on
-each, and runs a harness that injects timestomp scenarios from the arena.
-Exercises the recorder and detector end to end on provisioned infrastructure;
-pairs directly with priority 1. The local Docker-only version is enough to be
-honest about it.
+Shipped as `range/` (see Done above): Docker-provider Terraform that builds the
+recorder image and runs a fleet of endpoint containers, plus `scenario.py` which
+injects a timestomp on each and scans the collected ledgers. `terraform
+fmt`/`validate` run in CI. Follow-ups: a cloud-VM variant, and exercising it
+against a live daemon in CI (validate-only today).
 
 ### 4. Platform integration: OCSF/ECS exporter (S)
 

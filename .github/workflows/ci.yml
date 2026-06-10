@@ -43,3 +43,15 @@ jobs:
         run: go -C recorder vet ./...
       - name: Test (go test)
         run: go -C recorder test ./...
+
+  range:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd  # v3
+      - name: Format check
+        run: terraform -chdir=range fmt -check
+      - name: Init
+        run: terraform -chdir=range init -backend=false
+      - name: Validate
+        run: terraform -chdir=range validate

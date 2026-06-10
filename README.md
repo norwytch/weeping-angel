@@ -130,6 +130,9 @@ Working, tested code in this repo (Python, plus Go for the recorder):
 - `recorder/`, the out-of-band collector in Go: watches file ops, builds the
   same hash chain, and writes the same JSONL ledger the Python detector reads.
   Go and Python compute byte-identical SHA-256 chains (cross-language verified).
+- `range/`, a Terraform test range (Docker provider) that provisions a fleet of
+  endpoint containers running the recorder, with a harness that injects
+  timestomps and scans the collected ledgers end to end.
 - `quantumlock/witnesses.py` and `quantumlock/detector.py`, the witness model
   and six ATT&CK-tagged divergence rules.
 - `quantumlock/response.py`, a rules-of-engagement response layer that turns
@@ -204,6 +207,7 @@ quantumlock/            # the package: detection logic and the simulation that e
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
 recorder/               # out-of-band collector in Go (shared JSONL ledger, hash chain)
+range/                  # Terraform range: recorder fleet + timestomp scenario (Docker)
 kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, optional dep)
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)

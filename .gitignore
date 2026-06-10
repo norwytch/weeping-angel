@@ -10,3 +10,8 @@ __pycache__/
 # Go build artifacts
 /recorder/recorder
 *.test
+# Terraform (keep .terraform.lock.hcl, ignore state + provider cache)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
