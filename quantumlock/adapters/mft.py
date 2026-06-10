@@ -20,6 +20,8 @@ lists. Records are assumed to be the standard 1024 bytes.
 
 from __future__ import annotations
 
+import mmap
+import os
 import struct
 import sys
 from collections.abc import Iterator
@@ -138,7 +140,9 @@ def parse_record(raw: bytes) -> ParsedRecord | None:
     return ParsedRecord(record_number, name, si_created, si_modified, fn_created)
 
 
-def iter_records(data: bytes, record_size: int = _RECORD_SIZE) -> Iterator[ParsedRecord]:
+def iter_records(
+    data: bytes | mmap.mmap, record_size: int = _RECORD_SIZE
+) -> Iterator[ParsedRecord]:
     for off in range(0, len(data) - record_size + 1, record_size):
         rec = parse_record(data[off : off + record_size])
         if rec is not None:
@@ -146,7 +150,7 @@ def iter_records(data: bytes, record_size: int = _RECORD_SIZE) -> Iterator[Parse
 
 
 def load_witnesses(
-    data: bytes, record_size: int = _RECORD_SIZE
+    data: bytes | mmap.mmap, record_size: int = _RECORD_SIZE
 ) -> tuple[DisplayWitness, MFTWitness, list[str]]:
     display = DisplayWitness()
     mft = MFTWitness()
@@ -163,14 +167,18 @@ def load_witnesses(
 def scan_mft(
     path: str, now: float | None = None, record_size: int = _RECORD_SIZE
 ) -> dict[str, list[Finding]]:
-    """Parse a raw $MFT and return findings per file. No USN here, so the
-    journal is empty and journal-only rules (R2/R4) stay silent by design."""
+    """Parse a raw $MFT and return findings per file. The file is memory-mapped
+    rather than read whole, so this scales to multi-GB images. No USN here, so
+    the journal is empty and journal-only rules (R2/R4) stay silent by design."""
     with open(path, "rb") as fh:
-        data = fh.read()
-    display, mft, file_ids = load_witnesses(data, record_size)
-    journal = JournalWitness(Ledger())  # empty: MFT-only evidence
-    detector = DivergenceDetector(display, mft, journal, now=now)
-    return {fid: detector.scan(fid) for fid in file_ids}
+        size = os.fstat(fh.fileno()).st_size
+        if size == 0:
+            return {}
+        with mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ) as data:
+            display, mft, file_ids = load_witnesses(data, record_size)
+            journal = JournalWitness(Ledger())  # empty: MFT-only evidence
+            detector = DivergenceDetector(display, mft, journal, now=now)
+            return {fid: detector.scan(fid) for fid in file_ids}
 
 
 def main(argv: list[str] | None = None) -> int:

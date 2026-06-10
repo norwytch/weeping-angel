@@ -1,0 +1,11 @@
+/* Timestomp detection for Elastic (EQL, Sysmon Event ID 2 via Winlogbeat).
+   ATT&CK T1070.006. Mirrors detections/sigma/. Field names follow the ECS
+   Sysmon mapping; adjust to your ingest pipeline.
+
+   EQL is used (not KQL) because catching a rollback needs to compare two
+   timestamp fields, which KQL alone cannot do. */
+
+/* $SI creation rolled back: the new creation time predates the previous one. */
+file where event.code == "2"
+  and not process.name in ("robocopy.exe", "xcopy.exe", "7z.exe", "WinRAR.exe", "tar.exe", "wbengine.exe")
+  and winlog.event_data.CreationUtcTime < winlog.event_data.PreviousCreationUtcTime

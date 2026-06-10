@@ -1,0 +1,17 @@
+``` Timestomp detection for Splunk (Sysmon Event ID 2, FileCreateTime change).
+    ATT&CK T1070.006. Mirrors detections/sigma/. Adjust the `sysmon` macro /
+    sourcetype and field names to your environment. ```
+
+``` 1. $SI creation rolled back: the new creation time predates the previous one. ```
+`sysmon` EventCode=2
+| search NOT Image IN ("*\\robocopy.exe","*\\xcopy.exe","*\\7z.exe","*\\WinRAR.exe","*\\tar.exe","*\\wbengine.exe")
+| eval prev=strptime(PreviousCreationUtcTime,"%Y-%m-%d %H:%M:%S.%9N"),
+       curr=strptime(CreationUtcTime,"%Y-%m-%d %H:%M:%S.%9N")
+| where curr < prev
+| table _time, Computer, Image, TargetFilename, PreviousCreationUtcTime, CreationUtcTime, User
+
+``` 2. Sub-second precision zeroed: a whole-second creation time (".000..."). ```
+`sysmon` EventCode=2
+| search NOT Image IN ("*\\robocopy.exe","*\\7z.exe","*\\WinRAR.exe","*\\tar.exe")
+| where match(CreationUtcTime, "\.0+$")
+| table _time, Computer, Image, TargetFilename, CreationUtcTime

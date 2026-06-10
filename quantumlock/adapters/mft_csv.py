@@ -91,11 +91,12 @@ def scan_csv(path: str, now: float | None = None) -> dict[str, list[Finding]]:
     """Parse an MFTECmd CSV and return findings per file id. No USN here, so the
     journal is empty and journal-only rules (R2/R4) stay silent by design."""
     with open(path, newline="", encoding="utf-8-sig") as fh:
-        rows = list(csv.DictReader(fh))
-    display, mft, file_ids = load_witnesses(rows)
-    journal = JournalWitness(Ledger())  # empty: MFT-only evidence
-    detector = DivergenceDetector(display, mft, journal, now=now)
-    return {fid: detector.scan(fid) for fid in file_ids}
+        # Stream rows straight from the reader (no list()) so a large export
+        # isn't held in memory all at once.
+        display, mft, file_ids = load_witnesses(csv.DictReader(fh))
+        journal = JournalWitness(Ledger())  # empty: MFT-only evidence
+        detector = DivergenceDetector(display, mft, journal, now=now)
+        return {fid: detector.scan(fid) for fid in file_ids}
 
 
 def main(argv: list[str] | None = None) -> int:

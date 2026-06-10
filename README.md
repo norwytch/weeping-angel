@@ -61,8 +61,11 @@ python examples/demo.py                       # narrated walkthrough of the scen
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
-pip install -e ".[test]" && pytest -q         # 88 tests
+pip install -e . && weeping-angel scan examples/data/sample.mft   # the unified CLI
+pip install -e ".[test]" && pytest -q         # 97 tests
 ```
+
+For the full argument and design walkthrough, see [`docs/WRITEUP.md`](docs/WRITEUP.md).
 
 ## Facing the Angels
 
@@ -102,6 +105,12 @@ Scenario 3 -- the Angel also tries to rewrite history
 The scenario 1 forgery is internally consistent (created before modified, looks
 like an old file), so single-source heuristics miss it. It still cannot survive
 a witness it could not reach.
+
+![Timestomp timeline: displayed $SI times predate the recorded truth](docs/timeline.svg)
+
+The displayed `$SI` times sit in 2019 while the out-of-band record shows the real
+2023 activity; the shaded gap is the forged backdate. Generate it for any file
+with `quantumlock.timeline.divergence_svg`.
 
 ## Detection rules
 
@@ -205,6 +214,8 @@ quantumlock/            # the package: detection logic and the simulation that e
   simulator.py          # filesystem sim, observation oracle, Angel agents
   response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
   export.py             # render findings as ECS / OCSF for SIEM ingestion
+  timeline.py           # forged-vs-true timeline as a standalone SVG
+  cli.py                # unified `weeping-angel` command-line entry point
   efficacy.py           # precision/recall harness over a labeled corpus
   arena.py              # adversarial Angels-vs-recorder game (coverage budget)
   adapters/windows.py   # design-only real-artifact adapters
@@ -216,7 +227,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 88 tests, incl. Hypothesis property tests
+tests/                  # 97 tests, incl. Hypothesis property tests
 ```
 
 ## License

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="240" font-family="ui-monospace,Menlo,monospace" font-size="13">
+<rect width="760" height="240" fill="#ffffff"/>
+<text x="20" y="30" font-size="16" font-weight="bold">Timestomp on evil.exe: displayed times predate the recorded truth</text>
+<rect x="150.0" y="50.0" width="570.0" height="140.0" fill="#e44" opacity="0.10"/>
+<text x="435.0" y="42.0" fill="#c33" text-anchor="middle">forged backdate</text>
+<text x="20" y="99.0" fill="#333">Displayed $SI</text>
+<line x1="150" y1="95.0" x2="720" y2="95.0" stroke="#ccc"/>
+<circle cx="150.0" cy="95.0" r="5" fill="#c0392b"/>
+<text x="150.0" y="83.0" text-anchor="middle" fill="#c0392b">created</text>
+<text x="150.0" y="117.0" text-anchor="middle" fill="#888" font-size="11">2019-01-01</text>
+<circle cx="150.0" cy="95.0" r="5" fill="#c0392b"/>
+<text x="150.0" y="83.0" text-anchor="middle" fill="#c0392b">modified</text>
+<text x="150.0" y="117.0" text-anchor="middle" fill="#888" font-size="11">2019-01-01</text>
+<text x="20" y="169.0" fill="#333">Out-of-band record</text>
+<line x1="150" y1="165.0" x2="720" y2="165.0" stroke="#ccc"/>
+<circle cx="720.0" cy="165.0" r="5" fill="#27ae60"/>
+<text x="720.0" y="153.0" text-anchor="middle" fill="#27ae60">birth</text>
+<text x="720.0" y="187.0" text-anchor="middle" fill="#888" font-size="11">2023-11-14</text>
+<circle cx="720.0" cy="165.0" r="5" fill="#27ae60"/>
+<text x="720.0" y="153.0" text-anchor="middle" fill="#27ae60">last write</text>
+<text x="720.0" y="187.0" text-anchor="middle" fill="#888" font-size="11">2023-11-14</text>
+</svg>

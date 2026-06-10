@@ -28,9 +28,9 @@ jobs:
       - name: Type-check (mypy)
         run: mypy quantumlock
       - name: Security scan (bandit)
-        run: bandit -r quantumlock -c pyproject.toml
+        run: bandit -r quantumlock examples -c pyproject.toml
       - name: Test (pytest)
-        run: pytest -q
+        run: pytest -q --cov=quantumlock --cov-report=term-missing
 
   recorder:
     runs-on: ubuntu-latest

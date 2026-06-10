@@ -34,6 +34,17 @@ timestomping. Both encode the same false-positive discipline as rule `R4`: a
 `not filter_known_good` clause exempts archivers, backup, and copy tools that
 legitimately rewrite timestamps.
 
+## Splunk and Elastic
+
+The same logic in two more query languages, for teams not on Sigma:
+
+- [`splunk/timestomp.spl`](splunk/timestomp.spl) — SPL over Sysmon EID 2, with
+  the creation-rollback and sub-second-zeroed checks.
+- [`elastic/timestomp.eql`](elastic/timestomp.eql) — EQL (needed to compare two
+  timestamp fields for the rollback check).
+
+Both keep the known-good exclusions and need field-name tuning for your ingest.
+
 ## Sysmon
 
 [`sysmon/timestomp.xml`](sysmon/timestomp.xml) turns on `FileCreateTime` (EID 2)

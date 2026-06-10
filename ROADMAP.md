@@ -31,6 +31,11 @@ strict priority. Rough effort is noted as S/M/L.
   adapter has a `--format ecs|ocsf` flag. (Priority 4)
 - CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
   security review (LOW-1/LOW-3 fixed).
+- Polish batch: `docs/WRITEUP.md` explainer; a unified `weeping-angel` CLI
+  (`quantumlock/cli.py`, console entry point); an SVG timeline visualization
+  (`quantumlock/timeline.py`, embedded in the README); Splunk SPL + Elastic EQL
+  rule exports; memory-mapped streaming for large `$MFT`/CSV (LOW-2); coverage
+  reporting in CI (93%); packaging metadata for PyPI.
 
 ## Near-term priorities
 
@@ -73,25 +78,18 @@ MFT adapter emits them with `--format ecs|ocsf`.
   that catches it. (M, needs a Windows lab)
 - More rules: `$MFT` sequence-number anomalies, USN reason-flag correlation,
   `$LogFile`, registry/prefetch timestamps. (M)
-- Export rules to more formats alongside Sigma: Splunk SPL, Elastic/KQL,
-  Chronicle YARA-L. (S each)
-- Confidence scoring / rule weighting so weak signals can combine. (M)
+- Confidence scoring already lands in `response.py`; rule-level weighting (some
+  rules count more than others toward confidence) is still open. (M)
+- DONE: Splunk SPL + Elastic EQL rule exports (`detections/`). Chronicle YARA-L
+  still open. (S)
 
 ## Data and realism
 
-- LOW-2 from the security review: stream large `$MFT` / CSV (mmap or chunked) so
-  it scales to full disk images instead of loading whole files. (S)
 - Real evidence pipeline: generate timestomped files in a Windows VM with real
   tools, collect real `$MFT`/`$FN`/USN, ship a sanitized real sample. (L)
 - USN journal binary parser for `$Extend\$UsnJrnl:$J` (currently the journal is
   design-only / ledger-backed). (M)
-
-## Output and UX
-
-- Real CLI (typer/argparse): `weeping-angel scan <input> --format json|table`,
-  exit codes, JSONL for SIEM ingestion. (S)
-- Timeline visualization (matplotlib or HTML): forged vs true timeline with the
-  divergence highlighted. One screenshot for the README/social preview. (M)
+- DONE: LOW-2, memory-mapped streaming for large `$MFT`/CSV. (S)
 
 ## Arena and competition
 
@@ -105,15 +103,15 @@ MFT adapter emits them with `--format ecs|ocsf`.
 
 ## Communication and distribution
 
-- `docs/WRITEUP.md`: a blog-style explainer (what timestomping is, why
-  `$SI`/`$FN`/USN diverge, a worked example through all six rules). (S)
-- Publish the package to PyPI. (S)
-- asciinema/GIF of the demo in the README. (S)
+- Publish the package to PyPI (metadata is ready; needs an account token). (S)
+- asciinema/GIF of the demo in the README (record locally). (S)
+- DONE: `docs/WRITEUP.md` explainer; unified `weeping-angel` CLI.
 
 ## Engineering
 
-- Coverage reporting + badge. (S)
-- Extend mypy/bandit to `kaggle/` and `tests/`, not just `quantumlock`. (S)
+- Live coverage badge (needs a Codecov/Coveralls account; reporting is in CI). (S)
+- Extend mypy to `tests/` (noisy; deferred). bandit now also scans `examples/`. (S)
+- DONE: coverage reporting in CI; SVG timeline visualization.
 
 ## Ideas parking lot
 

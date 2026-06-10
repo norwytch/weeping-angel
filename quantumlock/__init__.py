@@ -13,6 +13,7 @@ from .ledger import Ledger, Record, VerifyResult
 from .paradox import Outcome, ParadoxProof, WorldState, prove_no_paradox_free_move, step
 from .response import Action, ResponseDecision, ResponsePolicy, RulesOfEngagement, confidence
 from .simulator import AdvancedAngel, Angel, FileSystemSim, ObservationOracle
+from .timeline import Marker, divergence_svg, render_timeline
 from .witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness, Witness
 
 __all__ = [
@@ -46,5 +47,8 @@ __all__ = [
     "ecs_event",
     "ocsf_finding",
     "to_jsonl",
+    "Marker",
+    "render_timeline",
+    "divergence_svg",
 ]
 __version__ = "0.1.0"
