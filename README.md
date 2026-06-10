@@ -7,7 +7,7 @@
 
 Detecting timestomping malware that acts only when it believes it is unobserved.
 
-In the classic British sci-fi series Doctor Who, a Weeping Angel is an entity that can only move when it is not being observed. Under direct observation, it must remain in the form of a graveyard statue, perfectly still. When freed from observation, Weeping Angels can move faster than light through space in order to reach their victims and feed off their "temporal energy," including movement through digital signal networks. This means that Weeping Angels could also potentially be used for malware. 
+In the classic British sci-fi series Doctor Who, a Weeping Angel is an entity that can only move when it is not being observed. Under direct observation, it must remain in the form of a graveyard statue, perfectly still. When freed from observation, Weeping Angels can move faster than light through space in order to reach their victims and feed off their "temporal energy," including movement through digital signal networks. This means that Weeping Angels could also potentially be used for malware.
 
 In this repo, we imagine a piece of malware with similar capabilities (lateral movement only under lack of observation) and goal (disrupting a target's timeline) as the show. Of course, we are ultimately bound by the fact that the Angels are imagined as "quantum" entities, and we are constrained by classical computing systems. Nevertheless, we imagine this piece of malware as the following mapping:
 
@@ -66,6 +66,8 @@ pip install -e ".[test]" && pytest -q         # 113 tests
 ```
 
 For the full argument and design walkthrough, see [`docs/WRITEUP.md`](docs/WRITEUP.md).
+To run the detector on real timestomps from a Windows VM, see the lab guide in
+[`docs/LAB.md`](docs/LAB.md).
 
 ## Facing the Angels
 
@@ -233,8 +235,8 @@ recorder/               # out-of-band collector in Go (shared JSONL ledger, hash
 range/                  # Terraform range: recorder fleet + timestomp scenario (Docker)
 kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, optional dep)
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
-examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
-docs/                   # DESIGN.md, THREAT_MODEL.md
+examples/               # demo, arena, and kaggle runners; data/ ($MFT + USN samples)
+docs/                   # DESIGN, THREAT_MODEL, WRITEUP, LAB, timeline.svg
 tests/                  # 113 tests, incl. Hypothesis property tests
 ```
 

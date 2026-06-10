@@ -5,7 +5,7 @@ strict priority. Rough effort is noted as S/M/L.
 
 ## Done
 
-- Six divergence rules (R1-R6), each tagged to MITRE ATT&CK T1070.006, with the
+- Seven divergence rules (R1-R7), each tagged to MITRE ATT&CK T1070.006, with the
   R4 false-positive fix (ground-truth contradiction + trusted-actor allowlist).
 - Raw NTFS `$MFT` binary parser (FILE records, USA fixups, FILETIME) and an
   MFTECmd-CSV adapter.
@@ -93,8 +93,10 @@ MFT adapter emits them with `--format ecs|ocsf`.
 
 ## Data and realism
 
-- Real evidence pipeline: generate timestomped files in a Windows VM with real
-  tools, collect real `$MFT`/`$FN`/USN, ship a sanitized real sample. (L)
+- Real evidence pipeline: the step-by-step lab guide is written
+  (`docs/LAB.md`) -- timestomp with real tools, collect `$MFT`/USN, run the
+  detector, build the validation matrix. Still to execute on a Windows VM and
+  ship a sanitized real sample + filled-in matrix. (L, needs a Windows lab)
 - Live USN collection (real-time `FSCTL_READ_USN_JOURNAL`) is still design-only;
   the offline `$J` binary parser is done. (M)
 - DONE: USN journal binary parser; LOW-2 memory-mapped streaming for `$MFT`/CSV.
