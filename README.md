@@ -53,9 +53,9 @@ flowchart LR
 ```bash
 git clone <this repo> && cd weeping_angel
 python examples/demo.py                       # narrated walkthrough of the scenarios
-python -m quantumlock.adapters.mft_csv examples/data/mft_sample.csv  # scan a real MFT export
+python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
-pip install -e ".[test]" && pytest -q         # 41 tests
+pip install -e ".[test]" && pytest -q         # 47 tests
 ```
 
 ## Facing the Angels
@@ -126,7 +126,9 @@ Working, tested Python in this repo:
 - `quantumlock/paradox.py`, the observed/unobserved state machine with an
   unreachability proof.
 - `quantumlock/simulator.py`, a deterministic filesystem and Angel simulator.
-- `quantumlock/adapters/mft_csv.py`, runs the rules over a real MFTECmd CSV export.
+- `quantumlock/adapters/mft.py`, parses a raw NTFS `$MFT` (FILE records, Update
+  Sequence Array fixups, FILETIME decoding) and runs the rules on it;
+  `adapters/mft_csv.py` does the same from an MFTECmd CSV export.
 - `quantumlock/efficacy.py`, precision/recall over a labeled corpus.
 
 Design-only (documented, not executable here): the kernel minifilter,
@@ -167,11 +169,12 @@ quantumlock/            # the package: detection logic and the simulation that e
   simulator.py          # filesystem sim, observation oracle, Angel agents
   efficacy.py           # precision/recall harness over a labeled corpus
   adapters/windows.py   # design-only real-artifact adapters
-  adapters/mft_csv.py   # executable: run the rules over a real MFTECmd CSV export
+  adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
+  adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
-examples/               # demo.py (narrated scenarios) and data/ (sample MFT export)
+examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 41 tests, incl. Hypothesis property tests
+tests/                  # 47 tests, incl. Hypothesis property tests
 ```
 
 ## License
