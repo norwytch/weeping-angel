@@ -67,7 +67,7 @@ proves that, under a fixed out-of-band-observation invariant, the unsafe state
 
 **2. Multi-witness divergence.** Keep several independent timestamp sources that
 must agree if nothing forged anything. No single witness catches the Angel; their
-disagreement does. `quantumlock/detector.py` runs six rules, each citing the
+disagreement does. `quantumlock/detector.py` runs seven rules, each citing the
 witnesses whose disagreement triggered it:
 
 | Rule | Catches |
@@ -78,6 +78,7 @@ witnesses whose disagreement triggered it:
 | R4 | a captured metadata-set op writes a value that contradicts ground truth |
 | R5 | a timestamp in the future |
 | R6 | `$SI` zeroed to whole seconds while a witness keeps 100ns precision |
+| R7 | displayed modified predates the kernel-set `$FN` modified |
 
 R6 is worth a note: many `SetFileTime`-based tools truncate sub-second
 precision, so a creation time of exactly `...000` next to a `$FN`/USN value with

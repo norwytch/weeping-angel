@@ -75,14 +75,20 @@ class MFTWitness(Witness):
 
     def __init__(self) -> None:
         self._birth: dict[str, float] = {}
+        self._modified: dict[str, float] = {}
 
     def observe(self, file_id: str) -> MACE | None:
         if file_id not in self._birth:
             return None
-        return MACE(created=self._birth[file_id])
+        return MACE(created=self._birth[file_id], modified=self._modified.get(file_id))
 
     def record_birth(self, file_id: str, when: float) -> None:
         self._birth.setdefault(file_id, when)
+
+    def record_modified(self, file_id: str, when: float) -> None:
+        """The ``$FN`` modified time, kernel-set and left alone by classic
+        stompers; lets the detector compare it against the displayed modified."""
+        self._modified.setdefault(file_id, when)
 
 
 class JournalWitness(Witness):

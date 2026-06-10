@@ -62,7 +62,7 @@ python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a r
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
 pip install -e . && weeping-angel scan examples/data/sample.mft   # the unified CLI
-pip install -e ".[test]" && pytest -q         # 97 tests
+pip install -e ".[test]" && pytest -q         # 109 tests
 ```
 
 For the full argument and design walkthrough, see [`docs/WRITEUP.md`](docs/WRITEUP.md).
@@ -122,6 +122,7 @@ with `quantumlock.timeline.divergence_svg`.
 | `R4_setinfo_captured` | USN | A metadata-set op writing a value that contradicts ground truth: predates the `$FN` birth, rolls back before the true last write, or is in the future |
 | `R5_future_timestamp` | `$SI` | A timestamp in the future |
 | `R6_subsecond_truncation` | `$SI` vs `$FN`/USN | `$SI` zeroed to whole seconds while a witness keeps 100ns precision, the nanoseconds-zeroed tell of `SetFileTime`-based stompers |
+| `R7_si_fn_modified_divergence` | `$SI` vs `$FN` | Displayed modified predates the kernel-set `$FN` modified, which classic stompers leave untouched |
 
 Every `Finding` is tagged to MITRE ATT&CK
 [T1070.006](https://attack.mitre.org/techniques/T1070/006/) (Indicator Removal:
@@ -143,7 +144,7 @@ Working, tested code in this repo (Python, plus Go for the recorder):
   endpoint containers running the recorder, with a harness that injects
   timestomps and scans the collected ledgers end to end.
 - `quantumlock/witnesses.py` and `quantumlock/detector.py`, the witness model
-  and six ATT&CK-tagged divergence rules.
+  and seven ATT&CK-tagged divergence rules.
 - `quantumlock/response.py`, a rules-of-engagement response layer that turns
   findings into bounded actions (alert/ticket/quarantine/isolate), dry-run by
   default, gated on corroboration-based confidence, every decision logged to the
@@ -156,10 +157,13 @@ Working, tested code in this repo (Python, plus Go for the recorder):
 - `quantumlock/simulator.py`, a deterministic filesystem and Angel simulator.
 - `quantumlock/adapters/mft.py`, parses a raw NTFS `$MFT` (FILE records, Update
   Sequence Array fixups, FILETIME decoding) and runs the rules on it;
-  `adapters/mft_csv.py` does the same from an MFTECmd CSV export.
+  `adapters/mft_csv.py` does the same from an MFTECmd CSV export;
+  `adapters/usn.py` parses the USN journal (`$J`) for the true timeline, so R2
+  runs on a real journal.
 - `quantumlock/efficacy.py`, precision/recall over a labeled corpus.
 - `quantumlock/arena.py`, an adversarial bot-vs-bot game (Angels vs the
-  out-of-band recorder under a coverage budget) with baseline and inference agents.
+  out-of-band recorder under a coverage budget) with baseline, inference, and
+  Bayesian (Thompson-sampling) agents, plus an opt-in staging-cost mechanic.
 - `kaggle/weeping_angel.py`, the same game packaged as a
   [kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation
   (`pip install -e ".[arena]"`), ready for a bot-vs-bot competition.
@@ -209,7 +213,7 @@ quantumlock/            # the package: detection logic and the simulation that e
   ledger.py             # hash-chained, append-only, tamper-evident log
   anchor.py             # HMAC-authenticated off-box head anchor (closes tail-truncation)
   witnesses.py          # $SI / $FN / USN witnesses over a common interface
-  detector.py           # six divergence rules -> ATT&CK-tagged findings
+  detector.py           # seven divergence rules -> ATT&CK-tagged findings
   paradox.py            # observed/unobserved state machine + unreachability proof
   simulator.py          # filesystem sim, observation oracle, Angel agents
   response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
@@ -221,13 +225,14 @@ quantumlock/            # the package: detection logic and the simulation that e
   adapters/windows.py   # design-only real-artifact adapters
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
+  adapters/usn.py       # executable: parse the USN journal ($J) for the true timeline
 recorder/               # out-of-band collector in Go (shared JSONL ledger, hash chain)
 range/                  # Terraform range: recorder fleet + timestomp scenario (Docker)
 kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, optional dep)
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 97 tests, incl. Hypothesis property tests
+tests/                  # 109 tests, incl. Hypothesis property tests
 ```
 
 ## License

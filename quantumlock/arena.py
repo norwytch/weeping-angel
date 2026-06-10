@@ -49,6 +49,11 @@ class ArenaConfig:
     # signal an inference-based blue can learn. Blue only sees it where it covers.
     benign_rate: float = 0.15  # empty file
     angel_rate: float = 0.50  # file hosting a lurking Angel
+    # Staging cost (opt-in, 0 = off). An Angel must emit activity on >= arm_ticks
+    # prior ticks before it is allowed to stomp -- so acting requires first making
+    # noise, which is what an inference blue can detect. Off by default so the
+    # baseline game (and the published Kaggle env) are unchanged.
+    arm_ticks: int = 0
     seed: int = 0
 
 
@@ -200,6 +205,38 @@ class InferenceBlue(BlueAgent):
         return chosen
 
 
+class BayesBlue(BlueAgent):
+    """Maintains a Beta posterior per file over "hosts an Angel" and covers by
+    Thompson sampling: draw a probability from each file's posterior and take the
+    highest. Sampling builds in exploration -- uncertain files occasionally win a
+    draw -- without a hand-tuned exploration term."""
+
+    def reset(self, config: ArenaConfig, rng: random.Random) -> None:
+        super().reset(config, rng)
+        self._covered = [0] * config.n_files
+
+    def coverage(self, tick: int, observations: list[dict]) -> Iterable[int]:
+        caught: set[int] = set()
+        activity = [0] * self.config.n_files
+        for o in observations:
+            if o["kind"] == "catch":
+                caught.add(o["file"])
+            else:
+                activity[o["file"]] += 1
+
+        def sample(f: int) -> float:
+            alpha = activity[f] + 1
+            beta = (self._covered[f] - activity[f]) + 1
+            return self.rng.betavariate(alpha, max(1, beta))
+
+        candidates = [f for f in range(self.config.n_files) if f not in caught]
+        candidates.sort(key=sample, reverse=True)
+        chosen = candidates[: min(self.config.coverage_budget, len(candidates))]
+        for f in chosen:
+            self._covered[f] += 1
+        return chosen
+
+
 class EvasiveRed(RedAgent):
     """Counters an inference blue by striking before it can learn. All Angels
     move on a single random early tick, denying blue both the observation time
@@ -215,6 +252,22 @@ class EvasiveRed(RedAgent):
         return [a.angel_id for a in angels if a.status == LURKING]
 
 
+class MixedRed(RedAgent):
+    """Each Angel draws a random strike tick, then keeps attempting every tick
+    until it succeeds. The randomized timing is hard for blue to anticipate, and
+    the persistent retries make it robust to a staging cost (it waits until the
+    Angel is armed without knowing when that is)."""
+
+    def reset(self, config: ArenaConfig, rng: random.Random) -> None:
+        super().reset(config, rng)
+        self._after = {i: rng.randrange(config.n_ticks) for i in range(config.n_angels)}
+
+    def act(self, tick: int, angels: list[AngelView]) -> Iterable[int]:
+        return [
+            a.angel_id for a in angels if a.status == LURKING and tick >= self._after[a.angel_id]
+        ]
+
+
 def play(blue: BlueAgent, red: RedAgent, config: ArenaConfig) -> MatchResult:
     """Run one episode. Deterministic for a given config.seed and agents."""
     # game/episode RNGs for reproducibility, not security-sensitive
@@ -225,6 +278,8 @@ def play(blue: BlueAgent, red: RedAgent, config: ArenaConfig) -> MatchResult:
     # Hidden Angel placement: red knows it, blue must infer it.
     files = env_rng.sample(range(config.n_files), config.n_angels)
     angels = [AngelView(i, f) for i, f in enumerate(files)]
+    file_to_angel = {a.file: a.angel_id for a in angels}
+    armed: dict[int, int] = {}  # angel_id -> ticks it has emitted activity (staging)
 
     observations: list[dict] = []
     caught = corrupted = 0
@@ -245,27 +300,35 @@ def play(blue: BlueAgent, red: RedAgent, config: ArenaConfig) -> MatchResult:
         moves = {int(i) for i in red.act(tick, views)}
         acted_files = set()
         for a in angels:
-            if a.status == LURKING and a.angel_id in moves:
-                acted_files.add(a.file)
-                if a.file in cover:
-                    a.status = CAUGHT
-                    caught += 1
-                    observations.append({"tick": tick, "file": a.file, "kind": "catch"})
-                else:
-                    a.status = CORRUPTED
-                    corrupted += 1
-                    if corrupted == 1:
-                        time_to_corruption = tick
-                    # uncovered move is invisible to blue -- nothing observed
+            if a.status != LURKING or a.angel_id not in moves:
+                continue
+            if config.arm_ticks and armed.get(a.angel_id, 0) < config.arm_ticks:
+                continue  # staging cost: not yet armed, the stomp is a no-op
+            acted_files.add(a.file)
+            if a.file in cover:
+                a.status = CAUGHT
+                caught += 1
+                observations.append({"tick": tick, "file": a.file, "kind": "catch"})
+            else:
+                a.status = CORRUPTED
+                corrupted += 1
+                if corrupted == 1:
+                    time_to_corruption = tick
+                # uncovered move is invisible to blue -- nothing observed
 
         # background activity, visible to blue only where it is covering. Files
-        # hosting a still-lurking Angel are noisier than empty ones.
+        # hosting a still-lurking Angel are noisier than empty ones; each emission
+        # also advances that Angel's arming progress.
         lurking_files = {a.file for a in angels if a.status == LURKING}
         for f in range(config.n_files):
             if f in acted_files:
                 continue
-            rate = config.angel_rate if f in lurking_files else config.benign_rate
-            if env_rng.random() < rate and f in cover:
+            is_angel = f in lurking_files
+            rate = config.angel_rate if is_angel else config.benign_rate
+            emitted = env_rng.random() < rate
+            if emitted and is_angel:
+                armed[file_to_angel[f]] = armed.get(file_to_angel[f], 0) + 1
+            if emitted and f in cover:
                 observations.append({"tick": tick, "file": f, "kind": "activity"})
 
     dormant = sum(1 for a in angels if a.status == LURKING)
@@ -302,10 +365,12 @@ BLUE_BASELINES: dict[str, type[BlueAgent]] = {
     "random": RandomBlue,
     "sweep": SweepBlue,
     "inference": InferenceBlue,
+    "bayes": BayesBlue,
 }
 RED_BASELINES: dict[str, type[RedAgent]] = {
     "rush": RushRed,
     "random": RandomRed,
     "spread": SpreadRed,
     "evasive": EvasiveRed,
+    "mixed": MixedRed,
 }

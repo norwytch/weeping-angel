@@ -2,9 +2,11 @@ from quantumlock.arena import (
     CAUGHT,
     CORRUPTED,
     ArenaConfig,
+    BayesBlue,
     BlueAgent,
     EvasiveRed,
     InferenceBlue,
+    MixedRed,
     RandomBlue,
     RandomRed,
     RushRed,
@@ -145,6 +147,44 @@ def test_inference_blue_is_deterministic():
         b.corrupted,
         b.time_to_corruption,
     )
+
+
+def test_arm_ticks_off_is_unchanged():
+    # The staging mechanic must be byte-identical to the baseline when arm_ticks=0.
+    cfg0 = ArenaConfig(seed=4)
+    cfg_default = ArenaConfig(seed=4, arm_ticks=0)
+    a = play(RandomBlue(), MixedRed(), cfg0)
+    b = play(RandomBlue(), MixedRed(), cfg_default)
+    assert (a.caught, a.corrupted, a.time_to_corruption) == (
+        b.caught,
+        b.corrupted,
+        b.time_to_corruption,
+    )
+
+
+def test_staging_cost_delays_corruption():
+    def ttc(arm):
+        return sum(
+            play(RandomBlue(), MixedRed(), ArenaConfig(seed=s, arm_ticks=arm)).time_to_corruption
+            for s in range(40)
+        ) / 40
+
+    assert ttc(4) > ttc(0)  # Angels must arm (and reveal themselves) before acting
+
+
+def test_bayes_blue_beats_random_against_patient_red():
+    def rate(blue):
+        out = tournament({"b": blue}, {"mixed": MixedRed}, base=ArenaConfig(), episodes=60)
+        return out[("b", "mixed")].blue_detection_rate
+
+    assert rate(BayesBlue) > rate(RandomBlue)
+
+
+def test_mixed_red_is_deterministic():
+    cfg = ArenaConfig(seed=9)
+    a = play(BayesBlue(), MixedRed(), cfg)
+    b = play(BayesBlue(), MixedRed(), cfg)
+    assert (a.caught, a.corrupted) == (b.caught, b.corrupted)
 
 
 def test_status_constants_used():

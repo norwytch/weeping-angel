@@ -85,6 +85,24 @@ class DivergenceDetector:
                     )
                 )
 
+        # R7 -- $SI modified earlier than the kernel-set $FN modified. Classic
+        # stompers rewrite $SI but leave the $FN timestamps, so a displayed
+        # modified far older than $FN's modified is the same tell as R1, applied
+        # to the modified field rather than birth.
+        if d and f and d.modified is not None and f.modified is not None:
+            if d.modified < f.modified - EPSILON:
+                findings.append(
+                    Finding(
+                        file_id,
+                        "R7_si_fn_modified_divergence",
+                        "high",
+                        "Displayed modified time predates the kernel-set $FN modified "
+                        "time, which classic stompers leave untouched.",
+                        (self.display.name, self.mft.name),
+                        {"display_modified": d.modified, "fn_modified": f.modified},
+                    )
+                )
+
         # R2 -- modified rollback ($SI modified earlier than the journal's true write)
         if d and j and d.modified is not None and j.modified is not None:
             if d.modified < j.modified - EPSILON:

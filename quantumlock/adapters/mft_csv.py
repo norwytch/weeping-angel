@@ -83,6 +83,9 @@ def load_witnesses(rows) -> tuple[DisplayWitness, MFTWitness, list[str]]:
         fn_birth = parse_filetime(_col(row, "Created0x30"))
         if fn_birth is not None:
             mft.record_birth(fid, fn_birth)
+        fn_modified = parse_filetime(_col(row, "LastModified0x30"))
+        if fn_modified is not None:
+            mft.record_modified(fid, fn_modified)
         file_ids.append(fid)
     return display, mft, file_ids
 

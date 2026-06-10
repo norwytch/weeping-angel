@@ -31,6 +31,14 @@ strict priority. Rough effort is noted as S/M/L.
   adapter has a `--format ecs|ocsf` flag. (Priority 4)
 - CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
   security review (LOW-1/LOW-3 fixed).
+- USN journal binary parser (`quantumlock/adapters/usn.py`): parses
+  `$Extend\$UsnJrnl:$J` (USN_RECORD_V2, reason flags, FILETIME), maps it onto the
+  ledger so R2 runs on a real journal; `scan_with_usn` combines MFT + USN.
+- Rule R7 (`$SI` modified predates the kernel-set `$FN` modified), the canonical
+  `$SI`-vs-`$FN` tell extended to the modified field; the MFT/CSV parsers now
+  read `$FN` modified. Seven rules total.
+- Deeper arena: an opt-in staging-cost mechanic (`arm_ticks`), a Bayesian
+  (Thompson-sampling) blue, and a persistent mixed-strategy red.
 - Polish batch: `docs/WRITEUP.md` explainer; a unified `weeping-angel` CLI
   (`quantumlock/cli.py`, console entry point); an SVG timeline visualization
   (`quantumlock/timeline.py`, embedded in the README); Splunk SPL + Elastic EQL
@@ -76,30 +84,31 @@ MFT adapter emits them with `--format ecs|ocsf`.
 - Validation matrix against real timestomping tools (Metasploit `timestomp`,
   SetMACE, nTimetools): capture artifacts, map each tool's signature to the rule
   that catches it. (M, needs a Windows lab)
-- More rules: `$MFT` sequence-number anomalies, USN reason-flag correlation,
-  `$LogFile`, registry/prefetch timestamps. (M)
+- More rules still open: `$MFT` sequence-number anomalies, `$LogFile`,
+  registry/prefetch timestamps. (M)
 - Confidence scoring already lands in `response.py`; rule-level weighting (some
   rules count more than others toward confidence) is still open. (M)
-- DONE: Splunk SPL + Elastic EQL rule exports (`detections/`). Chronicle YARA-L
-  still open. (S)
+- DONE: rule R7; Splunk SPL + Elastic EQL exports; USN reason-flag correlation
+  (content vs metadata classification). Chronicle YARA-L still open.
 
 ## Data and realism
 
 - Real evidence pipeline: generate timestomped files in a Windows VM with real
   tools, collect real `$MFT`/`$FN`/USN, ship a sanitized real sample. (L)
-- USN journal binary parser for `$Extend\$UsnJrnl:$J` (currently the journal is
-  design-only / ledger-backed). (M)
-- DONE: LOW-2, memory-mapped streaming for large `$MFT`/CSV. (S)
+- Live USN collection (real-time `FSCTL_READ_USN_JOURNAL`) is still design-only;
+  the offline `$J` binary parser is done. (M)
+- DONE: USN journal binary parser; LOW-2 memory-mapped streaming for `$MFT`/CSV.
 
 ## Arena and competition
 
 - JS/HTML renderer so the Kaggle notebook shows an animated replay
   (`html_renderer` is currently empty). (M)
-- Deeper game: a staging-cost mechanic (an Angel must emit activity to "arm"
-  before it can stomp), plus a Bayesian blue and a mixed-strategy red. (M)
 - Hosted competition: contribute the env upstream to Kaggle/kaggle-environments
   and pitch it, or run a community code-competition with a fixed opponent pool. (L)
 - A reinforcement-learning agent baseline. (M)
+- DONE: staging-cost mechanic (opt-in `arm_ticks`), Bayesian (Thompson-sampling)
+  blue, mixed-strategy persistent red. The mechanic is off by default so the
+  published Kaggle env is unaffected.
 
 ## Communication and distribution
 

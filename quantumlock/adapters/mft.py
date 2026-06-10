@@ -70,6 +70,7 @@ class ParsedRecord:
     si_created: float | None
     si_modified: float | None
     fn_created: float | None
+    fn_modified: float | None = None
 
 
 def _parse_standard_information(content: bytes) -> tuple[float | None, float | None]:
@@ -80,17 +81,18 @@ def _parse_standard_information(content: bytes) -> tuple[float | None, float | N
     return created, modified
 
 
-def _parse_file_name(content: bytes) -> tuple[float | None, str | None, int]:
+def _parse_file_name(content: bytes) -> tuple[float | None, float | None, str | None, int]:
     if len(content) < 0x42:
-        return None, None, -1
+        return None, None, None, -1
     created = filetime_to_epoch(struct.unpack_from("<Q", content, 0x08)[0])
+    modified = filetime_to_epoch(struct.unpack_from("<Q", content, 0x10)[0])
     name_chars = content[0x40]
     namespace = content[0x41]
     name = None
     end = 0x42 + name_chars * 2
     if end <= len(content):
         name = content[0x42:end].decode("utf-16-le", errors="replace")
-    return created, name, namespace
+    return created, modified, name, namespace
 
 
 def parse_record(raw: bytes) -> ParsedRecord | None:
@@ -108,7 +110,7 @@ def parse_record(raw: bytes) -> ParsedRecord | None:
         return None
     _apply_fixups(rec, usa_offset, usa_count)
 
-    si_created = si_modified = fn_created = None
+    si_created = si_modified = fn_created = fn_modified = None
     name: str | None = None
     best_namespace = -1
     n = len(rec)
@@ -131,13 +133,15 @@ def parse_record(raw: bytes) -> ParsedRecord | None:
                 if attr_type == _ATTR_STANDARD_INFORMATION:
                     si_created, si_modified = _parse_standard_information(content)
                 elif attr_type == _ATTR_FILE_NAME:
-                    fc, nm, ns = _parse_file_name(content)
+                    fc, fm, nm, ns = _parse_file_name(content)
                     if fc is not None and fn_created is None:
                         fn_created = fc
+                    if fm is not None and fn_modified is None:
+                        fn_modified = fm
                     if nm is not None and ns != _DOS_NAMESPACE and ns > best_namespace:
                         name, best_namespace = nm, ns
         off += attr_len
-    return ParsedRecord(record_number, name, si_created, si_modified, fn_created)
+    return ParsedRecord(record_number, name, si_created, si_modified, fn_created, fn_modified)
 
 
 def iter_records(
@@ -160,6 +164,8 @@ def load_witnesses(
         display.set_times(fid, MACE(modified=r.si_modified, created=r.si_created))
         if r.fn_created is not None:
             mft.record_birth(fid, r.fn_created)
+        if r.fn_modified is not None:
+            mft.record_modified(fid, r.fn_modified)
         file_ids.append(fid)
     return display, mft, file_ids
 

@@ -110,6 +110,26 @@ def test_r6_not_flagged_when_si_has_subsecond():
     assert "R6_subsecond_truncation" not in rules(det.scan("x"))
 
 
+def test_r7_si_fn_modified_divergence():
+    d = DisplayWitness()
+    d.set_times("x", MACE(modified=5.0, created=10.0))
+    m = MFTWitness()
+    m.record_birth("x", 9.0)
+    m.record_modified("x", 100.0)  # $FN modified much later than the displayed modified
+    det = DivergenceDetector(d, m, JournalWitness(Ledger()), now=1000.0)
+    assert "R7_si_fn_modified_divergence" in rules(det.scan("x"))
+
+
+def test_r7_not_flagged_when_si_modified_is_recent():
+    d = DisplayWitness()
+    d.set_times("x", MACE(modified=200.0, created=10.0))
+    m = MFTWitness()
+    m.record_birth("x", 9.0)
+    m.record_modified("x", 100.0)  # displayed modified newer than $FN modified -> normal
+    det = DivergenceDetector(d, m, JournalWitness(Ledger()), now=1000.0)
+    assert "R7_si_fn_modified_divergence" not in rules(det.scan("x"))
+
+
 def test_clean_file_has_no_findings():
     det = make(
         MACE(modified=5.0, created=1.0),
