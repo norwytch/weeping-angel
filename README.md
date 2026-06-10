@@ -61,7 +61,7 @@ python examples/demo.py                       # narrated walkthrough of the scen
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
-pip install -e ".[test]" && pytest -q         # 61 tests
+pip install -e ".[test]" && pytest -q         # 66 tests
 ```
 
 ## Facing the Angels
@@ -138,6 +138,9 @@ Working, tested Python in this repo:
 - `quantumlock/efficacy.py`, precision/recall over a labeled corpus.
 - `quantumlock/arena.py`, an adversarial bot-vs-bot game (Angels vs the
   out-of-band recorder under a coverage budget) with baseline and inference agents.
+- `kaggle/weeping_angel.py`, the same game packaged as a
+  [kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation
+  (`pip install -e ".[arena]"`), ready for a bot-vs-bot competition.
 
 Design-only (documented, not executable here): the kernel minifilter,
 hypervisor/VMI vantage point, and live USN collection. The real data source for
@@ -180,10 +183,11 @@ quantumlock/            # the package: detection logic and the simulation that e
   adapters/windows.py   # design-only real-artifact adapters
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
+kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, optional dep)
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 61 tests, incl. Hypothesis property tests
+tests/                  # 66 tests, incl. Hypothesis property tests
 ```
 
 ## License
