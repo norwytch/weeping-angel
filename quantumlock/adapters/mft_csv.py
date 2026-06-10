@@ -43,7 +43,9 @@ def parse_filetime(value: str | None) -> float | None:
     frac = 0.0
     if "." in text:
         text, frac_digits = text.split(".", 1)
-        frac_digits = "".join(ch for ch in frac_digits if ch.isdigit())
+        # A FILETIME has at most 7 fractional (100ns) digits; cap before the
+        # int()/10**n so a hostile cell can't force a huge bignum exponentiation.
+        frac_digits = "".join(ch for ch in frac_digits if ch.isdigit())[:7]
         if frac_digits:
             frac = int(frac_digits) / (10 ** len(frac_digits))
     try:
