@@ -62,7 +62,7 @@ python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a r
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
 pip install -e . && weeping-angel scan examples/data/sample.mft   # the unified CLI
-pip install -e ".[test]" && pytest -q         # 109 tests
+pip install -e ".[test]" && pytest -q         # 113 tests
 ```
 
 For the full argument and design walkthrough, see [`docs/WRITEUP.md`](docs/WRITEUP.md).
@@ -164,6 +164,8 @@ Working, tested code in this repo (Python, plus Go for the recorder):
 - `quantumlock/arena.py`, an adversarial bot-vs-bot game (Angels vs the
   out-of-band recorder under a coverage budget) with baseline, inference, and
   Bayesian (Thompson-sampling) agents, plus an opt-in staging-cost mechanic.
+- `quantumlock/learn.py`, a learned arena agent: a linear coverage policy trained
+  by Evolution Strategies (`weeping-angel learn`), the dependency-free RL baseline.
 - `kaggle/weeping_angel.py`, the same game packaged as a
   [kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation
   (`pip install -e ".[arena]"`), ready for a bot-vs-bot competition.
@@ -222,6 +224,7 @@ quantumlock/            # the package: detection logic and the simulation that e
   cli.py                # unified `weeping-angel` command-line entry point
   efficacy.py           # precision/recall harness over a labeled corpus
   arena.py              # adversarial Angels-vs-recorder game (coverage budget)
+  learn.py              # learned arena agent (Evolution Strategies, no deps)
   adapters/windows.py   # design-only real-artifact adapters
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
@@ -232,7 +235,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 109 tests, incl. Hypothesis property tests
+tests/                  # 113 tests, incl. Hypothesis property tests
 ```
 
 ## License

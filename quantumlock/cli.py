@@ -75,7 +75,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_arena.add_argument("--episodes", type=int, default=100, help="episodes per matchup")
     p_arena.set_defaults(func=_cmd_arena)
 
+    p_learn = sub.add_parser("learn", help="train an arena blue agent with Evolution Strategies")
+    p_learn.add_argument("--generations", type=int, default=20)
+    p_learn.set_defaults(func=_cmd_learn)
+
     return parser
+
+
+def _cmd_learn(args: argparse.Namespace) -> int:
+    from .learn import train
+
+    weights, history = train(generations=args.generations, seed=1)
+    print("fitness (mean reward) by generation:")
+    print("  " + "  ".join(f"{h:+.2f}" for h in history))
+    print(f"\nlearned weights: [{', '.join(f'{x:.3f}' for x in weights)}]")
+    print(f"improvement: {history[0]:+.2f} -> {history[-1]:+.2f}")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
