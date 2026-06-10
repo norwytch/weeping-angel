@@ -1,0 +1,45 @@
+title: Timestomping via $STANDARD_INFORMATION Creation Time Change
+id: 8f1c2a3e-4b5d-4e6f-9a0b-1c2d3e4f5a6b
+status: experimental
+description: >
+  Detects modification of a file's $STANDARD_INFORMATION creation time
+  (FileCreateTime), the userland-writable timestamp classic timestompers forge
+  to backdate files. Corroborate with $FN ($FILE_NAME) from the MFT: a $SI
+  creation time earlier than the kernel-set $FN birth is the canonical tell
+  (rule R1). Setting an old creation time alone is ambiguous, so known-good
+  copy/backup/archive tools are filtered out.
+references:
+  - https://attack.mitre.org/techniques/T1070/006/
+  - https://www.sans.org/blog/ntfs-timestamps-and-timestomping/
+author: weeping-angel (quantumlock)
+date: 2026/06/09
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventID: 2  # Sysmon: a process changed a file creation time
+  filter_known_good:
+    Image|endswith:
+      - '\robocopy.exe'
+      - '\xcopy.exe'
+      - '\7z.exe'
+      - '\7zG.exe'
+      - '\WinRAR.exe'
+      - '\tar.exe'
+      - '\wbengine.exe'      # Windows Backup
+      - '\BackupAgent.exe'
+  condition: selection and not filter_known_good
+fields:
+  - Image
+  - TargetFilename
+  - CreationUtcTime
+  - PreviousCreationUtcTime
+  - User
+falsepositives:
+  - Archive extraction, backup/restore, and file-copy tools that preserve original timestamps
+  - Build systems that reset timestamps for reproducible output
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1070.006

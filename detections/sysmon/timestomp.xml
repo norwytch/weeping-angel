@@ -1,0 +1,26 @@
+<!--
+  Minimal Sysmon config fragment for timestomp detection (ATT&CK T1070.006).
+
+  Sysmon Event ID 2 (FileCreateTime) fires when a process changes a file's
+  $STANDARD_INFORMATION creation time. It is the primary live telemetry for
+  timestomping and is OFF by default in many baselines. Merge this RuleGroup
+  into your existing Sysmon config (e.g. a SwiftOnSecurity / Olaf Hartong base).
+
+  Strategy: log every FileCreateTime change EXCEPT those from known-good
+  copy/backup/archive tools (same false-positive discipline as detector R4 and
+  the Sigma rules). Downstream, correlate against $FN/USN to confirm a forgery.
+-->
+<Sysmon schemaversion="4.90">
+  <EventFiltering>
+    <RuleGroup name="Timestomp (T1070.006)" groupRelation="or">
+      <FileCreateTime onmatch="exclude">
+        <Image condition="end with">\robocopy.exe</Image>
+        <Image condition="end with">\xcopy.exe</Image>
+        <Image condition="end with">\7z.exe</Image>
+        <Image condition="end with">\WinRAR.exe</Image>
+        <Image condition="end with">\tar.exe</Image>
+        <Image condition="end with">\wbengine.exe</Image>
+      </FileCreateTime>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

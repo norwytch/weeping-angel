@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantumlock"
+version = "0.1.0"
+description = "Defeating timestomping malware that only acts when unobserved — a Weeping Angel framework."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["dfir", "forensics", "timestomp", "anti-forensics", "ntfs", "tamper-evident"]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "hypothesis>=6"]
+dev = ["pytest>=7", "hypothesis>=6", "ruff>=0.5", "mypy>=1.8", "bandit>=1.7"]
+
+[tool.setuptools]
+packages = ["quantumlock", "quantumlock.adapters"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.bandit]
+# tests exercise tamper/forgery paths on purpose; scan the package only.
+exclude_dirs = ["tests"]

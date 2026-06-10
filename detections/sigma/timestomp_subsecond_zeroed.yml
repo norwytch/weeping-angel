@@ -1,0 +1,39 @@
+title: Timestomping via Sub-Second-Zeroed File Creation Time
+id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+status: experimental
+description: >
+  Detects a file creation time set to an exact whole second (sub-second / 100ns
+  FILETIME ticks zeroed). SetFileTime-based timestompers (e.g. Metasploit
+  `timestomp`, older SetMACE) commonly drop sub-second precision that the
+  kernel-set $FN and the USN journal retain, making a ".0000000" creation time
+  a high-confidence tell (rule R6). Pair with the $SI-vs-$FN check for
+  confirmation.
+references:
+  - https://attack.mitre.org/techniques/T1070/006/
+author: weeping-angel (quantumlock)
+date: 2026/06/09
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventID: 2
+    CreationUtcTime|endswith: '.000'   # whole second, sub-second ticks zeroed
+  filter_known_good:
+    Image|endswith:
+      - '\robocopy.exe'
+      - '\7z.exe'
+      - '\WinRAR.exe'
+      - '\tar.exe'
+  condition: selection and not filter_known_good
+fields:
+  - Image
+  - TargetFilename
+  - CreationUtcTime
+  - PreviousCreationUtcTime
+falsepositives:
+  - Tools that legitimately write whole-second timestamps (some installers, reproducible builds)
+level: medium
+tags:
+  - attack.defense_evasion
+  - attack.t1070.006
