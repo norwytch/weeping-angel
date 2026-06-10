@@ -177,8 +177,8 @@ The arena is also packaged as a
 installs the env, plays an episode, and scores the built-in agents against each
 other.
 
-- On Kaggle: <!-- replace with your published notebook URL -->
-  https://www.kaggle.com/code/norwytch/weeping-angel-arena
+- On Kaggle: <!-- live once the notebook is published -->
+  https://www.kaggle.com/code/jaq2347/weeping-angel-arena
 - Locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
 
 ## Layout

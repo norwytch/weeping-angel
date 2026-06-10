@@ -3,5 +3,5 @@
   "id": "jaq2347/weeping-angel-arena",
   "licenses": [{ "name": "MIT" }],
   "subtitle": "An adversarial timestomp-detection game (kaggle-environments)",
-  "description": "Code + environment for the Weeping Angel Arena: an adversarial bot-vs-bot game where Angels (red) forge file timestamps only when unobserved and an out-of-band recorder (blue) tries to catch them under a coverage budget. Built on the quantumlock timestomp-detection framework. Replace the `id` username with your Kaggle username before uploading."
+  "description": "Code + environment for the Weeping Angel Arena: an adversarial bot-vs-bot game where Angels (red) forge file timestamps only when unobserved and an out-of-band recorder (blue) tries to catch them under a coverage budget. Built on the quantumlock timestomp-detection framework."
 }
