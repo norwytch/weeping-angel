@@ -25,14 +25,26 @@ from typing import Any
 GENESIS_HASH = "0" * 64
 
 
-def _canonical(event: dict[str, Any]) -> str:
-    """Deterministic serialization so hashing is stable across runs."""
-    return json.dumps(event, sort_keys=True, separators=(",", ":"))
+def _canonical(obj: Any) -> str:
+    """Deterministic serialization: compact, key-sorted JSON. Chosen so the hash
+    preimage is language-neutral -- Go's default ``json.Marshal`` sorts map keys
+    and emits the same compact bytes, so a Go recorder and this Python verifier
+    compute the identical SHA-256 chain. The catch: this only holds when the
+    shared ledger uses integers and strings, because floats serialize
+    differently across languages (Python ``1.0`` vs Go ``1``). The simulator's
+    in-memory ledger may use floats -- it is Python-only -- but any ledger meant
+    to cross the Go/Python boundary must use integer (nanosecond) timestamps and
+    integer/string event fields."""
+    # ensure_ascii=False so non-ASCII filenames serialize as raw UTF-8, matching
+    # Go's encoder (which does not \u-escape them).
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
-def _digest(index: int, recorded_at: float, event: dict[str, Any], prev_hash: str) -> str:
-    payload = f"{index}|{recorded_at!r}|{_canonical(event)}|{prev_hash}"
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+def _digest(index: int, recorded_at: Any, event: dict[str, Any], prev_hash: str) -> str:
+    preimage = _canonical(
+        {"event": event, "index": index, "prev_hash": prev_hash, "recorded_at": recorded_at}
+    )
+    return hashlib.sha256(preimage.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -102,6 +114,47 @@ class Ledger:
 
     def all_records(self) -> list[Record]:
         return list(self._records)
+
+    # -- JSONL persistence (the shared on-disk format) --------------------------
+    # One record per line. The Go recorder writes this exact format; Python loads
+    # and verifies it, and vice versa. Stored hashes are preserved on load so
+    # verify() re-derives and checks them (cross-language integrity check).
+
+    def dump(self, path: str) -> None:
+        with open(path, "w", encoding="utf-8") as fh:
+            for r in self._records:
+                fh.write(
+                    _canonical(
+                        {
+                            "index": r.index,
+                            "recorded_at": r.recorded_at,
+                            "event": r.event,
+                            "prev_hash": r.prev_hash,
+                            "hash": r.hash,
+                        }
+                    )
+                    + "\n"
+                )
+
+    @classmethod
+    def load(cls, path: str) -> Ledger:
+        ledger = cls()
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                d = json.loads(line)
+                ledger._records.append(
+                    Record(
+                        index=d["index"],
+                        recorded_at=d["recorded_at"],
+                        event=d["event"],
+                        prev_hash=d["prev_hash"],
+                        hash=d["hash"],
+                    )
+                )
+        return ledger
 
     def verify(self) -> VerifyResult:
         """Return whether the chain is internally consistent.

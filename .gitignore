@@ -7,3 +7,6 @@ __pycache__/
 .ruff_cache/
 .hypothesis/
 .DS_Store
+# Go build artifacts
+/recorder/recorder
+*.test

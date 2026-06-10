@@ -10,6 +10,7 @@ from .anchor import Anchor, AnchorVerifyResult, Checkpoint
 from .detector import DivergenceDetector, Finding
 from .ledger import Ledger, Record, VerifyResult
 from .paradox import Outcome, ParadoxProof, WorldState, prove_no_paradox_free_move, step
+from .response import Action, ResponseDecision, ResponsePolicy, RulesOfEngagement, confidence
 from .simulator import AdvancedAngel, Angel, FileSystemSim, ObservationOracle
 from .witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness, Witness
 
@@ -36,5 +37,10 @@ __all__ = [
     "ObservationOracle",
     "Angel",
     "AdvancedAngel",
+    "Action",
+    "RulesOfEngagement",
+    "ResponsePolicy",
+    "ResponseDecision",
+    "confidence",
 ]
 __version__ = "0.1.0"

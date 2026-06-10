@@ -1,0 +1,13 @@
+{
+  "id": "jaq2347/weeping-angel-notebook",
+  "title": "Weeping Angel Notebook",
+  "code_file": "weeping_angel_arena.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_internet": true,
+  "dataset_sources": ["jaq2347/weeping-angel-arena"],
+  "competition_sources": [],
+  "kernel_sources": []
+}

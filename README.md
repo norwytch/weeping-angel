@@ -61,7 +61,7 @@ python examples/demo.py                       # narrated walkthrough of the scen
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
-pip install -e ".[test]" && pytest -q         # 66 tests
+pip install -e ".[test]" && pytest -q         # 81 tests
 ```
 
 ## Facing the Angels
@@ -122,13 +122,20 @@ Timestomp). Sigma rules and a Sysmon config keyed on Sysmon Event ID 2
 
 ## Implemented vs design-only
 
-Working, tested Python in this repo:
+Working, tested code in this repo (Python, plus Go for the recorder):
 
-- `quantumlock/ledger.py`, tamper-evident hash-chained log, plus
+- `quantumlock/ledger.py`, tamper-evident hash-chained log (JSONL on disk), plus
   `quantumlock/anchor.py`, HMAC-authenticated off-box head anchor that closes
   the tail-truncation gap.
+- `recorder/`, the out-of-band collector in Go: watches file ops, builds the
+  same hash chain, and writes the same JSONL ledger the Python detector reads.
+  Go and Python compute byte-identical SHA-256 chains (cross-language verified).
 - `quantumlock/witnesses.py` and `quantumlock/detector.py`, the witness model
   and six ATT&CK-tagged divergence rules.
+- `quantumlock/response.py`, a rules-of-engagement response layer that turns
+  findings into bounded actions (alert/ticket/quarantine/isolate), dry-run by
+  default, gated on corroboration-based confidence, every decision logged to the
+  tamper-evident ledger.
 - `quantumlock/paradox.py`, the observed/unobserved state machine with an
   unreachability proof.
 - `quantumlock/simulator.py`, a deterministic filesystem and Angel simulator.
@@ -177,9 +184,8 @@ The arena is also packaged as a
 installs the env, plays an episode, and scores the built-in agents against each
 other.
 
-- On Kaggle: <!-- live once the notebook is published -->
-  https://www.kaggle.com/code/jaq2347/weeping-angel-arena
-- Locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
+- Run it on Kaggle: https://www.kaggle.com/code/jaq2347/weeping-angel-notebook
+- Run it locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
 
 ## Layout
 
@@ -191,16 +197,18 @@ quantumlock/            # the package: detection logic and the simulation that e
   detector.py           # six divergence rules -> ATT&CK-tagged findings
   paradox.py            # observed/unobserved state machine + unreachability proof
   simulator.py          # filesystem sim, observation oracle, Angel agents
+  response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
   efficacy.py           # precision/recall harness over a labeled corpus
   arena.py              # adversarial Angels-vs-recorder game (coverage budget)
   adapters/windows.py   # design-only real-artifact adapters
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
+recorder/               # out-of-band collector in Go (shared JSONL ledger, hash chain)
 kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, optional dep)
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 66 tests, incl. Hypothesis property tests
+tests/                  # 81 tests, incl. Hypothesis property tests
 ```
 
 ## License
