@@ -3,9 +3,13 @@ from quantumlock.arena import (
     CORRUPTED,
     ArenaConfig,
     BlueAgent,
+    EvasiveRed,
+    InferenceBlue,
     RandomBlue,
+    RandomRed,
     RushRed,
     SpreadRed,
+    SweepBlue,
     play,
     tournament,
 )
@@ -112,6 +116,35 @@ def test_caught_stomp_corresponds_to_an_r4_finding():
     uncovered.append({"file_id": "f", "op": "write"}, recorded_at=5.0)
     det2 = DivergenceDetector(display, mft, JournalWitness(uncovered), now=10.0)
     assert not any(f.rule == "R4_setinfo_captured" for f in det2.scan("f"))
+
+
+def test_inference_blue_beats_sweep_against_patient_red():
+    # The learnable activity signal should let inference clearly outscore a blind
+    # sweep when the Angels wait long enough to be located.
+    cfg = ArenaConfig()
+    inf = tournament({"inference": InferenceBlue}, {"random": RandomRed}, base=cfg, episodes=100)
+    swp = tournament({"sweep": SweepBlue}, {"random": RandomRed}, base=cfg, episodes=100)
+    inf_rate = inf[("inference", "random")].blue_detection_rate
+    swp_rate = swp[("sweep", "random")].blue_detection_rate
+    assert inf_rate > swp_rate
+
+
+def test_evasive_red_moves_every_angel_early():
+    cfg = ArenaConfig(seed=3)
+    r = play(RandomBlue(), EvasiveRed(), cfg)
+    assert r.dormant == 0  # all Angels strike on the single chosen tick
+    assert r.time_to_corruption < 3 or r.corrupted == 0
+
+
+def test_inference_blue_is_deterministic():
+    cfg = ArenaConfig(seed=11)
+    a = play(InferenceBlue(), RandomRed(), cfg)
+    b = play(InferenceBlue(), RandomRed(), cfg)
+    assert (a.caught, a.corrupted, a.time_to_corruption) == (
+        b.caught,
+        b.corrupted,
+        b.time_to_corruption,
+    )
 
 
 def test_status_constants_used():

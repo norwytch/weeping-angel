@@ -44,7 +44,11 @@ class ArenaConfig:
     n_angels: int = 4
     n_ticks: int = 30
     coverage_budget: int = 3
-    benign_rate: float = 0.25  # chance each non-acting file sees a benign op per tick
+    # Activity (cover traffic) per tick. A file hosting a lurking Angel is
+    # noisier than an empty one -- malware stages, writes, probes -- which is the
+    # signal an inference-based blue can learn. Blue only sees it where it covers.
+    benign_rate: float = 0.15  # empty file
+    angel_rate: float = 0.50  # file hosting a lurking Angel
     seed: int = 0
 
 
@@ -160,6 +164,57 @@ class SpreadRed(RedAgent):
         ]
 
 
+class InferenceBlue(BlueAgent):
+    """Learns where the Angels are. A lurking Angel's file shows activity more
+    often than an empty one, so blue tracks each file's activity-when-covered
+    rate and concentrates coverage on the noisiest unresolved files, while
+    reserving exploration for files it has barely seen.
+
+    Belief(f) = (activity seen + 1) / (times covered + 2). Never-covered files
+    sit at the 0.5 prior, so they get explored before being dismissed; empties
+    fall below that with coverage, Angel files climb above it."""
+
+    def reset(self, config: ArenaConfig, rng: random.Random) -> None:
+        super().reset(config, rng)
+        self._covered = [0] * config.n_files
+
+    def coverage(self, tick: int, observations: list[dict]) -> Iterable[int]:
+        caught: set[int] = set()
+        activity = [0] * self.config.n_files
+        for o in observations:
+            if o["kind"] == "catch":
+                caught.add(o["file"])
+            else:
+                activity[o["file"]] += 1
+
+        def belief(f: int) -> float:
+            return (activity[f] + 1) / (self._covered[f] + 2)
+
+        candidates = [f for f in range(self.config.n_files) if f not in caught]
+        # high belief first; break ties toward the least-covered file (explore)
+        candidates.sort(key=lambda f: (-belief(f), self._covered[f]))
+        k = min(self.config.coverage_budget, len(candidates))
+        chosen = candidates[:k]
+        for f in chosen:
+            self._covered[f] += 1
+        return chosen
+
+
+class EvasiveRed(RedAgent):
+    """Counters an inference blue by striking before it can learn. All Angels
+    move on a single random early tick, denying blue both the observation time
+    to locate them and a second tick to refine its coverage."""
+
+    def reset(self, config: ArenaConfig, rng: random.Random) -> None:
+        super().reset(config, rng)
+        self._strike = rng.randrange(max(1, min(3, config.n_ticks)))
+
+    def act(self, tick: int, angels: list[AngelView]) -> Iterable[int]:
+        if tick != self._strike:
+            return []
+        return [a.angel_id for a in angels if a.status == LURKING]
+
+
 def play(blue: BlueAgent, red: RedAgent, config: ArenaConfig) -> MatchResult:
     """Run one episode. Deterministic for a given config.seed and agents."""
     # game/episode RNGs for reproducibility, not security-sensitive
@@ -203,12 +258,15 @@ def play(blue: BlueAgent, red: RedAgent, config: ArenaConfig) -> MatchResult:
                         time_to_corruption = tick
                     # uncovered move is invisible to blue -- nothing observed
 
-        # benign background activity, visible to blue only where it is covering
+        # background activity, visible to blue only where it is covering. Files
+        # hosting a still-lurking Angel are noisier than empty ones.
+        lurking_files = {a.file for a in angels if a.status == LURKING}
         for f in range(config.n_files):
             if f in acted_files:
                 continue
-            if env_rng.random() < config.benign_rate and f in cover:
-                observations.append({"tick": tick, "file": f, "kind": "benign"})
+            rate = config.angel_rate if f in lurking_files else config.benign_rate
+            if env_rng.random() < rate and f in cover:
+                observations.append({"tick": tick, "file": f, "kind": "activity"})
 
     dormant = sum(1 for a in angels if a.status == LURKING)
     return MatchResult(caught, corrupted, dormant, time_to_corruption, config.n_ticks)
@@ -240,9 +298,14 @@ def tournament(
     return out
 
 
-BLUE_BASELINES: dict[str, type[BlueAgent]] = {"random": RandomBlue, "sweep": SweepBlue}
+BLUE_BASELINES: dict[str, type[BlueAgent]] = {
+    "random": RandomBlue,
+    "sweep": SweepBlue,
+    "inference": InferenceBlue,
+}
 RED_BASELINES: dict[str, type[RedAgent]] = {
     "rush": RushRed,
     "random": RandomRed,
     "spread": SpreadRed,
+    "evasive": EvasiveRed,
 }

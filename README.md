@@ -60,7 +60,8 @@ git clone <this repo> && cd weeping_angel
 python examples/demo.py                       # narrated walkthrough of the scenarios
 python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
-pip install -e ".[test]" && pytest -q         # 49 tests
+python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
+pip install -e ".[test]" && pytest -q         # 61 tests
 ```
 
 ## Facing the Angels
@@ -135,6 +136,8 @@ Working, tested Python in this repo:
   Sequence Array fixups, FILETIME decoding) and runs the rules on it;
   `adapters/mft_csv.py` does the same from an MFTECmd CSV export.
 - `quantumlock/efficacy.py`, precision/recall over a labeled corpus.
+- `quantumlock/arena.py`, an adversarial bot-vs-bot game (Angels vs the
+  out-of-band recorder under a coverage budget) with baseline and inference agents.
 
 Design-only (documented, not executable here): the kernel minifilter,
 hypervisor/VMI vantage point, and live USN collection. The real data source for
@@ -173,13 +176,14 @@ quantumlock/            # the package: detection logic and the simulation that e
   paradox.py            # observed/unobserved state machine + unreachability proof
   simulator.py          # filesystem sim, observation oracle, Angel agents
   efficacy.py           # precision/recall harness over a labeled corpus
+  arena.py              # adversarial Angels-vs-recorder game (coverage budget)
   adapters/windows.py   # design-only real-artifact adapters
   adapters/mft.py       # executable: parse a raw NTFS $MFT and run the rules
   adapters/mft_csv.py   # executable: run the rules over an MFTECmd CSV export
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo.py, plus data/ (raw $MFT sample + generator, MFTECmd CSV)
 docs/                   # DESIGN.md, THREAT_MODEL.md
-tests/                  # 49 tests, incl. Hypothesis property tests
+tests/                  # 61 tests, incl. Hypothesis property tests
 ```
 
 ## License
