@@ -1,3 +1,5 @@
+import pytest
+
 from quantumlock.detector import DivergenceDetector, Finding
 from quantumlock.ledger import Ledger
 from quantumlock.response import (
@@ -72,6 +74,32 @@ def test_executor_runs_only_when_not_dry_run():
     d = p.decide("f", fs("R1", "R2", "R3", "R4"))
     assert d.executed is True
     assert calls == [Action.ISOLATE]
+
+
+def test_executor_receives_the_real_decision_with_rules():
+    seen = []
+    roe = RulesOfEngagement(dry_run=False)
+    p = ResponsePolicy(roe, executors={Action.ISOLATE: lambda d: seen.append(d)})
+    p.decide("f", fs("R1", "R2", "R3", "R4"))
+    assert seen[0].rules == ("R1", "R2", "R3", "R4")  # not a stub with empty rules
+    assert seen[0].action == Action.ISOLATE
+
+
+def test_decision_is_logged_before_a_failing_executor_runs():
+    # The ledger entry must survive even if execution raises, and the failure
+    # is recorded too. The action can never have side effects unrecorded.
+    led = Ledger()
+    roe = RulesOfEngagement(dry_run=False)
+
+    def boom(_decision):
+        raise RuntimeError("quarantine backend down")
+
+    p = ResponsePolicy(roe, ledger=led, executors={Action.ISOLATE: boom})
+    with pytest.raises(RuntimeError):
+        p.decide("evil.exe", fs("R1", "R2", "R3", "R4"))
+    ops = [r.event["op"] for r in led.all_records()]
+    assert ops == ["response", "response_failed"]  # decision logged first
+    assert led.verify().ok
 
 
 def test_integration_detector_findings_drive_a_response():

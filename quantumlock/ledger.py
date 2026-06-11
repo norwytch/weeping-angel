@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -121,7 +122,11 @@ class Ledger:
     # verify() re-derives and checks them (cross-language integrity check).
 
     def dump(self, path: str) -> None:
-        with open(path, "w", encoding="utf-8") as fh:
+        # Create owner-only (0600): the integrity artifact should not be
+        # world-readable or world-writable. Defense-in-depth alongside the
+        # off-box HMAC anchor.
+        fd = os.open(path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
             for r in self._records:
                 fh.write(
                     _canonical(

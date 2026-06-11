@@ -88,7 +88,9 @@ func (l *Ledger) Append(recordedAt int64, event map[string]any) (Record, error) 
 // Dump writes the ledger as JSONL, one canonical record per line. Keys are
 // sorted so the output is byte-identical to the Python writer's.
 func (l *Ledger) Dump(path string) error {
-	f, err := os.Create(path)
+	// Create owner-only (0600): the integrity artifact should not be
+	// world-readable or world-writable. Mirrors quantumlock/ledger.py's dump.
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}

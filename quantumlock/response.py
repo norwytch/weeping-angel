@@ -147,11 +147,6 @@ class ResponsePolicy:
             action = downgraded
 
         executed = (not self.roe.dry_run) and action != Action.NONE
-        if executed and action in self.executors:
-            self.executors[action](
-                ResponseDecision(file_id, action, conf, self.roe.dry_run, True, (), reason)
-            )
-
         decision = ResponseDecision(
             file_id=file_id,
             action=action,
@@ -161,8 +156,31 @@ class ResponsePolicy:
             rules=tuple(sorted({f.rule for f in findings})),
             reason=reason,
         )
+
+        # Record the decision before acting, so an action can never have
+        # side effects without a durable ledger entry first.
         if self.ledger is not None and action != Action.NONE:
             self.ledger.append(decision.to_event(), recorded_at=self._now())
+
+        # Execute last, handing the executor the real decision (with the rules
+        # that justified it). If it fails, the decision is already recorded;
+        # log the failure too, then re-raise so the caller learns of it.
+        if executed and action in self.executors:
+            try:
+                self.executors[action](decision)
+            except Exception as exc:
+                if self.ledger is not None:
+                    self.ledger.append(
+                        {
+                            "file_id": file_id,
+                            "op": "response_failed",
+                            "action": action.name,
+                            "error": type(exc).__name__,
+                        },
+                        recorded_at=self._now(),
+                    )
+                raise
+
         return decision
 
     def respond(self, findings_by_file: dict[str, list[Finding]]) -> list[ResponseDecision]:
