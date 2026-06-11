@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from quantumlock.ledger import GENESIS_HASH, Ledger
+from weeping_angel.ledger import GENESIS_HASH, Ledger
 
 
 def build() -> Ledger:

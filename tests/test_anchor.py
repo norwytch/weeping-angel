@@ -1,7 +1,7 @@
 from dataclasses import replace
 
-from quantumlock.anchor import Anchor
-from quantumlock.ledger import Ledger
+from weeping_angel.anchor import Anchor
+from weeping_angel.ledger import Ledger
 
 KEY = b"off-box-collector-secret"
 

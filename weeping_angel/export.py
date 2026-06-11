@@ -29,7 +29,7 @@ _ECS_SEVERITY = {"high": 73, "medium": 47, "low": 21}
 # OCSF severity_id: 2 Low, 3 Medium, 4 High.
 _OCSF_SEVERITY_ID = {"low": 2, "medium": 3, "high": 4}
 
-_PRODUCT = {"name": "Weeping Angel", "vendor_name": "quantumlock"}
+_PRODUCT = {"name": "Weeping Angel", "vendor_name": "weeping_angel"}
 
 
 def _basename(path: str) -> str:
@@ -52,8 +52,8 @@ def ecs_event(
             "category": ["file"],
             "type": ["change"],
             "action": "timestomp-detected",
-            "dataset": "quantumlock.detector",
-            "module": "quantumlock",
+            "dataset": "weeping_angel.detector",
+            "module": "weeping_angel",
             "provider": "weeping-angel",
             "severity": _ECS_SEVERITY.get(finding.severity, 0),
         },

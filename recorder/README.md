@@ -5,7 +5,7 @@ operations, computes a forward hash chain, and appends to the same append-only
 JSONL ledger the Python detector reads. Go is the natural fit — a single static
 binary with good concurrency, which is what you actually deploy on an endpoint.
 
-It writes the **same hash chain** as `quantumlock/ledger.py`. The preimage is a
+It writes the **same hash chain** as `weeping_angel/ledger.py`. The preimage is a
 compact, key-sorted JSON object `{event, index, prev_hash, recorded_at}`; Go's
 encoder (HTML escaping off) emits bytes identical to Python's
 `json.dumps(sort_keys=True, separators=(",",":"), ensure_ascii=False)`. This
@@ -36,7 +36,7 @@ go -C recorder run . verify ledger.jsonl
 The Python side consumes the output unchanged:
 
 ```python
-from quantumlock.ledger import Ledger
+from weeping_angel.ledger import Ledger
 Ledger.load("ledger.jsonl").verify().ok   # True for an intact chain
 ```
 

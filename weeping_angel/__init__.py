@@ -1,4 +1,4 @@
-"""quantumlock -- defeating timestomping malware that acts only when unobserved.
+"""weeping_angel -- defeating timestomping malware that acts only when unobserved.
 
 A Weeping Angel only moves when no one is watching. This package defeats the
 software analog -- malware that timestomps only when it believes it is

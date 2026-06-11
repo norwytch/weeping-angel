@@ -4,7 +4,7 @@ Each record is a real 1024-byte FILE record: a proper header, an Update Sequence
 Array with fixups, and resident $STANDARD_INFORMATION (0x10) and $FILE_NAME
 (0x30) attributes carrying Windows FILETIME timestamps. The structure follows the
 NTFS on-disk format, so MFTECmd / analyzeMFT would parse it too; only the values
-are hand-chosen. This is the inverse of quantumlock/adapters/mft.py -- writing
+are hand-chosen. This is the inverse of weeping_angel/adapters/mft.py -- writing
 the format we elsewhere read.
 
     python examples/data/make_mft_sample.py      # regenerates examples/data/sample.mft

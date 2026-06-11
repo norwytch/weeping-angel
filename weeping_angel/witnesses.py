@@ -13,10 +13,10 @@ Three witnesses are modeled, each mirroring a real NTFS / OS artifact:
 * :class:`MFTWitness`       -> ``$FILE_NAME`` (``$FN``). Birth time set by the
   kernel in the MFT; left untouched by classic stompers.
 * :class:`JournalWitness`   -> USN change journal / external append-only log,
-  backed by the tamper-evident :class:`~quantumlock.ledger.Ledger`. Records the
+  backed by the tamper-evident :class:`~weeping_angel.ledger.Ledger`. Records the
   *true* time of every operation, out-of-band.
 
-Real adapters for each live in ``quantumlock/adapters/windows.py`` (design-only).
+Real adapters for each live in ``weeping_angel/adapters/windows.py`` (design-only).
 """
 
 from __future__ import annotations

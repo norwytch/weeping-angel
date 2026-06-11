@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 
-from quantumlock.adapters.usn import (
+from weeping_angel.adapters.usn import (
     filetime_to_epoch,
     journal_ledger,
     parse_records,

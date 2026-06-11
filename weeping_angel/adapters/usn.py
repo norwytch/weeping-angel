@@ -3,7 +3,7 @@
 The journal is the project's "journal witness" grounded in real evidence: a
 stream of USN_RECORD_V2 structures, each recording a change to a file with a
 kernel timestamp and a set of *reason* flags. This parses that binary stream and
-maps it onto the same :class:`~quantumlock.ledger.Ledger` the detector reads, so
+maps it onto the same :class:`~weeping_angel.ledger.Ledger` the detector reads, so
 ``R2`` (displayed modified predates the journal's true last write) runs on a real
 journal.
 
@@ -15,7 +15,7 @@ a ``BASIC_INFO_CHANGE`` with no accompanying content change. The journal records
 the attempted value needs the minifilter (rule ``R4``). That split is the
 USN-only vs minifilter trade-off documented in ``docs/DESIGN.md``.
 
-    python -m quantumlock.adapters.usn examples/data/sample.usnjrnl
+    python -m weeping_angel.adapters.usn examples/data/sample.usnjrnl
 """
 
 from __future__ import annotations
@@ -141,7 +141,7 @@ def scan_with_usn(mft_path: str, usn_path: str, now: float | None = None) -> dic
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
-        print("usage: python -m quantumlock.adapters.usn <usnjrnl-$J>")
+        print("usage: python -m weeping_angel.adapters.usn <usnjrnl-$J>")
         return 2
     with open(argv[0], "rb") as fh:
         data = fh.read()

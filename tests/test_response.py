@@ -1,14 +1,14 @@
 import pytest
 
-from quantumlock.detector import DivergenceDetector, Finding
-from quantumlock.ledger import Ledger
-from quantumlock.response import (
+from weeping_angel.detector import DivergenceDetector, Finding
+from weeping_angel.ledger import Ledger
+from weeping_angel.response import (
     Action,
     ResponsePolicy,
     RulesOfEngagement,
     confidence,
 )
-from quantumlock.simulator import Angel, FileSystemSim
+from weeping_angel.simulator import Angel, FileSystemSim
 
 
 def fs(*rules, severity="high"):

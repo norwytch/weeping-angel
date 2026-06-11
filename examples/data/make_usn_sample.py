@@ -2,7 +2,7 @@
 
 Each entry is a real USN_RECORD_V2 (the format ``$Extend\\$UsnJrnl:$J`` holds),
 with a kernel FILETIME and reason flags. The stream starts with a sparse zero
-prefix, like a real $J. This is the inverse of quantumlock/adapters/usn.py.
+prefix, like a real $J. This is the inverse of weeping_angel/adapters/usn.py.
 
     python examples/data/make_usn_sample.py      # regenerates examples/data/sample.usnjrnl
 

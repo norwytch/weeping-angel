@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from quantumlock.arena import (  # noqa: E402
+from weeping_angel.arena import (  # noqa: E402
     BLUE_BASELINES,
     RED_BASELINES,
     ArenaConfig,

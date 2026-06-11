@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 
-from quantumlock.adapters.mft import filetime_to_epoch, iter_records, parse_record, scan_mft
+from weeping_angel.adapters.mft import filetime_to_epoch, iter_records, parse_record, scan_mft
 
 DATA = Path(__file__).resolve().parents[1] / "examples" / "data"
 SAMPLE = DATA / "sample.mft"

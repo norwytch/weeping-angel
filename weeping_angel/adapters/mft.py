@@ -5,13 +5,13 @@ records, this reads the on-disk bytes itself: FILE records, the Update Sequence
 Array fixups, and the resident ``$STANDARD_INFORMATION`` (0x10) and
 ``$FILE_NAME`` (0x30) attributes, decoding Windows FILETIME (100ns ticks since
 1601-01-01 UTC) into epoch seconds with sub-second precision intact. It then
-drives the same :class:`~quantumlock.detector.DivergenceDetector`, so the
+drives the same :class:`~weeping_angel.detector.DivergenceDetector`, so the
 ``$SI``-vs-``$FN`` comparison (rules R1 and R6) runs on genuine NTFS structures.
 
 Point it at a ``$MFT`` extracted from a live volume (FTK Imager, or ``dd`` of the
 ``$MFT`` from a raw image) or at the bundled sample:
 
-    python -m quantumlock.adapters.mft examples/data/sample.mft
+    python -m weeping_angel.adapters.mft examples/data/sample.mft
 
 Only resident $SI/$FN attributes are needed for timestomp detection, so the
 parser deliberately ignores data runs, non-resident attributes, and attribute
@@ -193,12 +193,12 @@ def main(argv: list[str] | None = None) -> int:
     if "--format" in argv:
         i = argv.index("--format")
         if i + 1 >= len(argv):
-            print("usage: python -m quantumlock.adapters.mft <mft-image> [--format ecs|ocsf]")
+            print("usage: python -m weeping_angel.adapters.mft <mft-image> [--format ecs|ocsf]")
             return 2
         fmt = argv[i + 1]
         del argv[i : i + 2]
     if not argv:
-        print("usage: python -m quantumlock.adapters.mft <mft-image> [--format ecs|ocsf]")
+        print("usage: python -m weeping_angel.adapters.mft <mft-image> [--format ecs|ocsf]")
         return 2
     results = scan_mft(argv[0])
 

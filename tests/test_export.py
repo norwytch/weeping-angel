@@ -1,7 +1,7 @@
 import json
 
-from quantumlock.detector import Finding
-from quantumlock.export import ecs_event, ocsf_finding, to_jsonl
+from weeping_angel.detector import Finding
+from weeping_angel.export import ecs_event, ocsf_finding, to_jsonl
 
 
 def finding(severity="high", rule="R1_si_fn_birth_divergence", file_id="evil.exe"):

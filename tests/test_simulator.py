@@ -1,5 +1,5 @@
-from quantumlock.detector import DivergenceDetector
-from quantumlock.simulator import AdvancedAngel, Angel, FileSystemSim
+from weeping_angel.detector import DivergenceDetector
+from weeping_angel.simulator import AdvancedAngel, Angel, FileSystemSim
 
 
 def primed_sim():

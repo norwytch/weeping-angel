@@ -1,4 +1,4 @@
-from quantumlock.efficacy import evaluate
+from weeping_angel.efficacy import evaluate
 
 
 def test_no_false_positives_on_benign_corpus():

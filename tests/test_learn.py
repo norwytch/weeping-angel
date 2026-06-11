@@ -1,5 +1,5 @@
-from quantumlock.arena import ArenaConfig, MixedRed, RandomBlue, play
-from quantumlock.learn import LearnedBlue, train
+from weeping_angel.arena import ArenaConfig, MixedRed, RandomBlue, play
+from weeping_angel.learn import LearnedBlue, train
 
 
 def test_training_improves_fitness():

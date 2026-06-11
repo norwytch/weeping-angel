@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from quantumlock.adapters.mft_csv import parse_filetime, scan_csv
+from weeping_angel.adapters.mft_csv import parse_filetime, scan_csv
 
 SAMPLE = Path(__file__).resolve().parents[1] / "examples" / "data" / "mft_sample.csv"
 

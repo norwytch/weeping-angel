@@ -23,10 +23,10 @@ import subprocess
 import sys
 import time
 
-from quantumlock.detector import DivergenceDetector
-from quantumlock.ledger import Ledger
-from quantumlock.response import ResponsePolicy
-from quantumlock.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
+from weeping_angel.detector import DivergenceDetector
+from weeping_angel.ledger import Ledger
+from weeping_angel.response import ResponsePolicy
+from weeping_angel.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
 
 WATCH = "/watch"
 LEDGER = "/ledger/ledger.jsonl"

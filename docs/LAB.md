@@ -89,14 +89,14 @@ Copy the exported `$MFT` and `$J` to a machine with the repo installed:
 ```bash
 # raw $MFT -> the binary parser, human or SIEM output
 weeping-angel scan ./\$MFT
-python -m quantumlock.adapters.mft ./\$MFT --format ocsf
+python -m weeping_angel.adapters.mft ./\$MFT --format ocsf
 
 # combine $MFT ($SI/$FN) with the USN journal so R2 runs on the real timeline
-python -c "from quantumlock.adapters.usn import scan_with_usn; \
+python -c "from weeping_angel.adapters.usn import scan_with_usn; \
 import json; print({k:[f.rule for f in v] for k,v in scan_with_usn('./\$MFT','./\$J').items() if v})"
 
 # MFTECmd CSV instead of the raw $MFT
-python -m quantumlock.adapters.mft_csv ./mft.csv
+python -m weeping_angel.adapters.mft_csv ./mft.csv
 ```
 
 Confirm `evil.exe` is flagged and your untouched files are clean.

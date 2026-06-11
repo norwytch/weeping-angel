@@ -1,6 +1,6 @@
 import xml.dom.minidom
 
-from quantumlock.timeline import Marker, divergence_svg, render_timeline
+from weeping_angel.timeline import Marker, divergence_svg, render_timeline
 
 
 def test_render_timeline_is_well_formed_svg():

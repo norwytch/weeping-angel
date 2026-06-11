@@ -1,9 +1,9 @@
 """Executable offline adapter: run the divergence rules on a real ``$MFT`` dump.
 
-Unlike :mod:`quantumlock.adapters.windows` (design-only, needs a live host), this
+Unlike :mod:`weeping_angel.adapters.windows` (design-only, needs a live host), this
 adapter is **runnable here**. It ingests the CSV produced by the standard DFIR
 MFT parsers -- Eric Zimmerman's ``MFTECmd`` (and, loosely, ``analyzeMFT``) -- and
-drives the same :class:`~quantumlock.detector.DivergenceDetector` over real NTFS
+drives the same :class:`~weeping_angel.detector.DivergenceDetector` over real NTFS
 artifacts.
 
 MFTECmd emits both attribute sets per record:
@@ -17,7 +17,7 @@ skipped when only an MFT is available.
 
 Usage::
 
-    python -m quantumlock.adapters.mft_csv path/to/mft.csv
+    python -m weeping_angel.adapters.mft_csv path/to/mft.csv
 """
 
 from __future__ import annotations
@@ -105,7 +105,7 @@ def scan_csv(path: str, now: float | None = None) -> dict[str, list[Finding]]:
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
-        print("usage: python -m quantumlock.adapters.mft_csv <mftecmd.csv>")
+        print("usage: python -m weeping_angel.adapters.mft_csv <mftecmd.csv>")
         return 2
     results = scan_csv(argv[0])
     flagged = {fid: fs for fid, fs in results.items() if fs}

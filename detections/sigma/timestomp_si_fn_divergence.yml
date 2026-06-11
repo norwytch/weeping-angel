@@ -11,7 +11,7 @@ description: >
 references:
   - https://attack.mitre.org/techniques/T1070/006/
   - https://www.sans.org/blog/ntfs-timestamps-and-timestomping/
-author: weeping-angel (quantumlock)
+author: weeping-angel (weeping_angel)
 date: 2026/06/09
 logsource:
   product: windows

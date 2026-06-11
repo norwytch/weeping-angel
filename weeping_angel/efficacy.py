@@ -10,7 +10,7 @@ The benign-setinfo class is the one that matters: it is exactly the case that a
 naive "any metadata write is evil" rule flags as a false positive. A healthy
 report shows it landing in the true-negative column.
 
-    python -m quantumlock.efficacy
+    python -m weeping_angel.efficacy
 """
 
 from __future__ import annotations

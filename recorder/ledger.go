@@ -2,7 +2,7 @@
 // watches file operations, computes a forward hash chain, and appends to the
 // same append-only JSONL ledger the Python detector reads.
 //
-// The hash chain matches quantumlock/ledger.py byte for byte. The preimage is a
+// The hash chain matches weeping_angel/ledger.py byte for byte. The preimage is a
 // compact, key-sorted JSON object {event, index, prev_hash, recorded_at}; Go's
 // encoder sorts map keys and (with HTML escaping disabled) emits the identical
 // bytes as Python's json.dumps(sort_keys=True, separators=(",",":"),
@@ -89,7 +89,7 @@ func (l *Ledger) Append(recordedAt int64, event map[string]any) (Record, error) 
 // sorted so the output is byte-identical to the Python writer's.
 func (l *Ledger) Dump(path string) error {
 	// Create owner-only (0600): the integrity artifact should not be
-	// world-readable or world-writable. Mirrors quantumlock/ledger.py's dump.
+	// world-readable or world-writable. Mirrors weeping_angel/ledger.py's dump.
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err

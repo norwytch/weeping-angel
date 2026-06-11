@@ -1,5 +1,5 @@
-from quantumlock.ledger import Ledger
-from quantumlock.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
+from weeping_angel.ledger import Ledger
+from weeping_angel.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
 
 
 def test_display_witness_roundtrip():

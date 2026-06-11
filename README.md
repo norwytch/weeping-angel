@@ -58,8 +58,8 @@ flowchart LR
 ```bash
 git clone <this repo> && cd weeping_angel
 python examples/demo.py                       # narrated walkthrough of the scenarios
-python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
-python -m quantumlock.efficacy                # precision/recall over a labeled corpus
+python -m weeping_angel.adapters.mft examples/data/sample.mft          # parse a raw $MFT and scan it
+python -m weeping_angel.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
 pip install -e . && weeping-angel scan examples/data/sample.mft   # the unified CLI
 pip install -e ".[test]" && pytest -q         # 115 tests
@@ -73,17 +73,17 @@ To run the detector on real timestomps from a Windows VM, see the lab guide in
 
 Angels are one of the most feared entities in the Whoniverse. It's important to know how to detect and defeat them in your system! `python examples/demo.py` runs the full arc on a simulated Angel.
 
-1. Move. With no in-band observer present, `Angel.tick` (`quantumlock/simulator.py`)
+1. Move. With no in-band observer present, `Angel.tick` (`weeping_angel/simulator.py`)
    writes forged `$SI` timestamps and returns `MOVING`. The same operation is
    recorded out-of-band in the ledger, which the Angel cannot see.
 2. Detect. Because the out-of-band witnesses kept the true values,
-   `DivergenceDetector.scan` (`quantumlock/detector.py`) finds they disagree and
+   `DivergenceDetector.scan` (`weeping_angel/detector.py`) finds they disagree and
    fires R1, R2, R4, and R6 in scenario 1. Nothing the Angel could observe was
    used to catch it.
 3. Defeat. Two ways. If it believes it is observed it goes `STONE` and never acts
    (scenario 2). When an `AdvancedAngel` tries to erase the record (scenario 3),
    the hash-chained ledger breaks on any interior edit and the off-box anchor
-   catches a dropped tail. The closing proof (`quantumlock/paradox.py`) shows the
+   catches a dropped tail. The closing proof (`weeping_angel/paradox.py`) shows the
    "moved but unrecorded" state is unreachable while out-of-band observation
    holds.
 
@@ -112,7 +112,7 @@ a witness it could not reach.
 
 The displayed `$SI` times sit in 2019 while the out-of-band record shows the real
 2023 activity; the shaded gap is the forged backdate. Generate it for any file
-with `quantumlock.timeline.divergence_svg`.
+with `weeping_angel.timeline.divergence_svg`.
 
 ## Detection rules
 
@@ -153,7 +153,7 @@ Everything below is working, tested code (Python, plus Go for the recorder); the
 Design-only (documented, not executable here): the kernel minifilter,
 hypervisor/VMI vantage point, and live USN collection. The real data source for
 each witness is spelled out in
-[`quantumlock/adapters/windows.py`](quantumlock/adapters/windows.py) and
+[`weeping_angel/adapters/windows.py`](weeping_angel/adapters/windows.py) and
 [`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Notes/Concessions to realism
@@ -167,7 +167,7 @@ each witness is spelled out in
 - Tamper-evidence protects the recorded past. It cannot recover a value the
   recorder never saw, so recorder coverage is the real security boundary.
 - The latest ledger record can still be dropped unless its head is anchored
-  off-box. `quantumlock/anchor.py` implements that anchor, so a dropped tail
+  off-box. `weeping_angel/anchor.py` implements that anchor, so a dropped tail
   surfaces as "the anchored head is ahead of what's on disk." See
   [`docs/DESIGN.md`](docs/DESIGN.md).
 - Setting an old timestamp is not inherently malicious; archivers,
@@ -196,7 +196,7 @@ baseline agents.
 ## Layout
 
 ```
-quantumlock/            # the package: detection logic and the simulation that exercises it
+weeping_angel/            # the package: detection logic and the simulation that exercises it
   ledger.py             # hash-chained, append-only, tamper-evident log
   anchor.py             # HMAC-authenticated off-box head anchor (closes tail-truncation)
   witnesses.py          # $SI / $FN / USN witnesses over a common interface

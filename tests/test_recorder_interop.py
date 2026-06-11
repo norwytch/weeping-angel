@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from quantumlock.ledger import Ledger
+from weeping_angel.ledger import Ledger
 
 go = shutil.which("go")
 pytestmark = pytest.mark.skipif(go is None, reason="Go toolchain not installed")

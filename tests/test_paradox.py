@@ -1,4 +1,4 @@
-from quantumlock.paradox import Outcome, WorldState, prove_no_paradox_free_move, step
+from weeping_angel.paradox import Outcome, WorldState, prove_no_paradox_free_move, step
 
 
 def test_stone_when_believes_observed():

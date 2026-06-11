@@ -8,9 +8,9 @@ hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import given, settings  # noqa: E402
 from hypothesis import strategies as st  # noqa: E402
 
-from quantumlock.detector import DivergenceDetector  # noqa: E402
-from quantumlock.ledger import Ledger  # noqa: E402
-from quantumlock.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness  # noqa: E402
+from weeping_angel.detector import DivergenceDetector  # noqa: E402
+from weeping_angel.ledger import Ledger  # noqa: E402
+from weeping_angel.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness  # noqa: E402
 
 # realistic-but-bounded epoch range with sub-second precision
 times = st.floats(min_value=1.0e9, max_value=2.0e9, allow_nan=False, allow_infinity=False)

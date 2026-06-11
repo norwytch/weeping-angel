@@ -11,7 +11,7 @@ Every rule detects the same technique from a different vantage point:
 - Tactic: [TA0005, Defense Evasion](https://attack.mitre.org/tactics/TA0005/)
 - Technique: [T1070.006, Indicator Removal: Timestomp](https://attack.mitre.org/techniques/T1070/006/)
 
-Findings from `quantumlock.detector` carry `technique` and `tactic` fields set
+Findings from `weeping_angel.detector` carry `technique` and `tactic` fields set
 to these ids.
 
 ## Rule to artifact to telemetry

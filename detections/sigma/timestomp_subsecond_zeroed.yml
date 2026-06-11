@@ -10,7 +10,7 @@ description: >
   confirmation.
 references:
   - https://attack.mitre.org/techniques/T1070/006/
-author: weeping-angel (quantumlock)
+author: weeping-angel (weeping_angel)
 date: 2026/06/09
 logsource:
   product: windows

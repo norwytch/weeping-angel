@@ -38,7 +38,7 @@ shipping the head hash off-box to a collector the malware cannot write to, or by
 committing the head to write-once storage or a transparency log on a cadence. A
 dropped tail then shows up as "the anchored head is ahead of what's on disk."
 
-This is implemented in [`quantumlock/anchor.py`](../quantumlock/anchor.py).
+This is implemented in [`weeping_angel/anchor.py`](../weeping_angel/anchor.py).
 `Anchor.checkpoint()` pins `(length, head_hash)` under an HMAC keyed with a
 secret the in-guest attacker never holds, standing in for an ed25519
 transparency-log signature and verified with `hmac.compare_digest`.

@@ -1,6 +1,6 @@
 """External head anchoring -- closing the tail-truncation gap.
 
-The hash chain (:mod:`quantumlock.ledger`) makes any edit to an *interior*
+The hash chain (:mod:`weeping_angel.ledger`) makes any edit to an *interior*
 record detectable: a later record's ``prev_hash`` stops matching. The one gap it
 cannot close on its own is truncation of the *tail* -- an attacker who drops the
 most recent records leaves a shorter but still self-consistent chain.

@@ -26,11 +26,11 @@ jobs:
       - name: Lint (ruff)
         run: ruff check .
       - name: Type-check (mypy)
-        run: mypy quantumlock
+        run: mypy weeping_angel
       - name: Security scan (bandit)
-        run: bandit -r quantumlock examples -c pyproject.toml
+        run: bandit -r weeping_angel examples -c pyproject.toml
       - name: Test (pytest)
-        run: pytest -q --cov=quantumlock --cov-report=term-missing
+        run: pytest -q --cov=weeping_angel --cov-report=term-missing
 
   recorder:
     runs-on: ubuntu-latest

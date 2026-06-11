@@ -1,6 +1,6 @@
-from quantumlock.detector import DivergenceDetector
-from quantumlock.ledger import Ledger
-from quantumlock.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
+from weeping_angel.detector import DivergenceDetector
+from weeping_angel.ledger import Ledger
+from weeping_angel.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
 
 
 def make(display_mace, birth, journal_events, trusted_setinfo_actors=None):

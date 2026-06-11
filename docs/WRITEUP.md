@@ -61,13 +61,13 @@ This reframes the Doctor Who "temporal paradox." In the show the paradox is
 mechanical: you trap the Angel in a physical contradiction. On a computer that
 would mean destabilizing the OS. The translation that costs nothing is
 *epistemic*: decouple the malware's belief about being observed from the reality
-of it. `quantumlock/paradox.py` formalizes this as a tiny state machine and
+of it. `weeping_angel/paradox.py` formalizes this as a tiny state machine and
 proves that, under a fixed out-of-band-observation invariant, the unsafe state
 "acted but was not recorded" is unreachable.
 
 **2. Multi-witness divergence.** Keep several independent timestamp sources that
 must agree if nothing forged anything. No single witness catches the Angel; their
-disagreement does. `quantumlock/detector.py` runs seven rules, each citing the
+disagreement does. `weeping_angel/detector.py` runs seven rules, each citing the
 witnesses whose disagreement triggered it:
 
 | Rule | Catches |
@@ -86,8 +86,8 @@ real 100-nanosecond ticks is a high-confidence tell.
 
 **3. Tamper-evident ledger.** The out-of-band record is a forward hash-chained,
 append-only log: every record commits to its predecessor, so editing the past
-breaks the chain (`quantumlock/ledger.py`). The remaining gap is dropping the
-tail, which leaves a shorter but self-consistent chain; `quantumlock/anchor.py`
+breaks the chain (`weeping_angel/ledger.py`). The remaining gap is dropping the
+tail, which leaves a shorter but self-consistent chain; `weeping_angel/anchor.py`
 closes it with HMAC-authenticated off-box checkpoints, so a dropped tail shows up
 as "the anchored head is ahead of what's on disk."
 
@@ -112,7 +112,7 @@ Being honest about the limits is the point, not a footnote.
 
 ## From detection to response
 
-A detector that only emits findings is half a system. `quantumlock/response.py`
+A detector that only emits findings is half a system. `weeping_angel/response.py`
 adds a rules-of-engagement layer: a finding maps to a bounded action (alert,
 ticket, quarantine, isolate), gated on a confidence that rises with
 corroboration, dry-run by default, with every decision appended to the same
@@ -135,15 +135,15 @@ design-only documentation.
   and Python's `json.dumps` emit the same bytes.
 - A Terraform range (`range/`) provisions a fleet of recorder containers and
   injects timestomp scenarios, exercising the whole pipeline end to end.
-- Findings export to ECS and OCSF for SIEM ingestion (`quantumlock/export.py`),
+- Findings export to ECS and OCSF for SIEM ingestion (`weeping_angel/export.py`),
   and ship as Sigma/Sysmon detections.
 - The minifilter, hypervisor/VMI vantage point, and live USN collection are
   design-only, with the real data source for each witness documented in
-  `quantumlock/adapters/windows.py` and `docs/DESIGN.md`.
+  `weeping_angel/adapters/windows.py` and `docs/DESIGN.md`.
 
 ## The one honest line about "quantum"
 
-The package is called `quantumlock` and the framing borrows "quantum locked"
+The package is called `weeping_angel` and the framing borrows "quantum locked"
 from the show. Nothing in the mechanism is quantum. "Observation" here is an
 epistemic check (the malware testing whether a monitor is present), not a
 physical measurement. The name is a wink, and the README says so plainly.

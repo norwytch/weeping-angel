@@ -1,6 +1,6 @@
 """Response layer: from detection to action, under rules of engagement.
 
-The detector emits :class:`~quantumlock.detector.Finding`s and stops. This turns
+The detector emits :class:`~weeping_angel.detector.Finding`s and stops. This turns
 findings into decisions: alert, ticket, quarantine, or isolate, gated by a
 confidence threshold and an explicit rules-of-engagement config. Three things
 make autonomous action deployable rather than reckless, and all three are here:
@@ -11,7 +11,7 @@ make autonomous action deployable rather than reckless, and all three are here:
   confidence rises with corroboration -- more independent rules firing on the
   same file means a higher score. Destructive actions need more agreement.
 * **A tamper-evident audit trail.** Every decision is appended to the same
-  hash-chained :class:`~quantumlock.ledger.Ledger` the detector reads, so the
+  hash-chained :class:`~weeping_angel.ledger.Ledger` the detector reads, so the
   autonomous action is itself recorded, replayable, and impossible to rewrite
   without breaking the chain.
 

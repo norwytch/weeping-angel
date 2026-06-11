@@ -17,7 +17,7 @@ strict priority. Rough effort is noted as S/M/L.
 - Sigma rules + Sysmon config (Event ID 2).
 - Adversarial arena (Angels vs recorder) with baseline and inference agents,
   packaged as a kaggle-environments sim and published as a Kaggle notebook.
-- Response / rules-of-engagement layer (`quantumlock/response.py`): findings to
+- Response / rules-of-engagement layer (`weeping_angel/response.py`): findings to
   bounded actions, dry-run default, confidence gate, every decision logged to the
   tamper-evident ledger. (Priority 2)
 - Go recorder (`recorder/`): out-of-band host collector that builds the same
@@ -26,12 +26,12 @@ strict priority. Rough effort is noted as S/M/L.
 - Terraform test range (`range/`): Docker-provider config that provisions a
   fleet of recorder containers, with a scenario harness that injects timestomps
   and scans the collected ledgers. (Priority 3)
-- Findings exporter (`quantumlock/export.py`): renders findings as ECS or OCSF
+- Findings exporter (`weeping_angel/export.py`): renders findings as ECS or OCSF
   Detection Findings (with the ATT&CK mapping) for SIEM ingestion; the MFT
   adapter has a `--format ecs|ocsf` flag. (Priority 4)
 - CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
   security review (LOW-1/LOW-3 fixed).
-- USN journal binary parser (`quantumlock/adapters/usn.py`): parses
+- USN journal binary parser (`weeping_angel/adapters/usn.py`): parses
   `$Extend\$UsnJrnl:$J` (USN_RECORD_V2, reason flags, FILETIME), maps it onto the
   ledger so R2 runs on a real journal; `scan_with_usn` combines MFT + USN.
 - Rule R7 (`$SI` modified predates the kernel-set `$FN` modified), the canonical
@@ -40,8 +40,8 @@ strict priority. Rough effort is noted as S/M/L.
 - Deeper arena: an opt-in staging-cost mechanic (`arm_ticks`), a Bayesian
   (Thompson-sampling) blue, and a persistent mixed-strategy red.
 - Polish batch: `docs/WRITEUP.md` explainer; a unified `weeping-angel` CLI
-  (`quantumlock/cli.py`, console entry point); an SVG timeline visualization
-  (`quantumlock/timeline.py`, embedded in the README); Splunk SPL + Elastic EQL
+  (`weeping_angel/cli.py`, console entry point); an SVG timeline visualization
+  (`weeping_angel/timeline.py`, embedded in the README); Splunk SPL + Elastic EQL
   rule exports; memory-mapped streaming for large `$MFT`/CSV (LOW-2); coverage
   reporting in CI (93%); packaging metadata for PyPI.
 
@@ -60,7 +60,7 @@ detector run rules directly on a recorder-produced ledger.
 
 ### 2. Response / rules-of-engagement layer — DONE
 
-Shipped as `quantumlock/response.py` (see Done above): `ResponsePolicy` maps
+Shipped as `weeping_angel/response.py` (see Done above): `ResponsePolicy` maps
 findings to a bounded action under an RoE config, dry-run by default, gated on
 corroboration-based confidence, with every decision appended to the
 tamper-evident ledger.
@@ -75,7 +75,7 @@ against a live daemon in CI (validate-only today).
 
 ### 4. Platform integration: OCSF/ECS exporter — DONE
 
-Shipped as `quantumlock/export.py` (see Done above): `ecs_event`, `ocsf_finding`,
+Shipped as `weeping_angel/export.py` (see Done above): `ecs_event`, `ocsf_finding`,
 and `to_jsonl` render findings (with the ATT&CK mapping) for SIEM ingestion; the
 MFT adapter emits them with `--format ecs|ocsf`.
 
@@ -110,10 +110,10 @@ MFT adapter emits them with `--format ecs|ocsf`.
   renderer). Remaining work is opening the PR to Kaggle/kaggle-environments and
   pitching them to host it -- gated on their interest. (L)
 - DONE: staging-cost mechanic, Bayesian (Thompson-sampling) blue, mixed-strategy
-  persistent red. In the `quantumlock` arena the mechanic is opt-in (`arm_ticks`,
+  persistent red. In the `weeping_angel` arena the mechanic is opt-in (`arm_ticks`,
   default off); the published Kaggle env turns it on by default (`armTicks=3`) so
   the hosted competition is the deep game.
-- DONE: a learned agent baseline (`quantumlock/learn.py`) -- a linear coverage
+- DONE: a learned agent baseline (`weeping_angel/learn.py`) -- a linear coverage
   policy trained by Evolution Strategies, pure stdlib (no deep-learning deps). It
   beats random and matches the hand-tuned inference agent, and proves the arena is
   a learnable environment (reward improves over generations).

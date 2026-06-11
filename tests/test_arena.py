@@ -1,4 +1,4 @@
-from quantumlock.arena import (
+from weeping_angel.arena import (
     CAUGHT,
     CORRUPTED,
     ArenaConfig,
@@ -15,9 +15,9 @@ from quantumlock.arena import (
     play,
     tournament,
 )
-from quantumlock.detector import DivergenceDetector
-from quantumlock.ledger import Ledger
-from quantumlock.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
+from weeping_angel.detector import DivergenceDetector
+from weeping_angel.ledger import Ledger
+from weeping_angel.witnesses import MACE, DisplayWitness, JournalWitness, MFTWitness
 
 
 class CoverAll(BlueAgent):

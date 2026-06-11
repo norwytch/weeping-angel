@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from quantumlock.cli import main
-from quantumlock.ledger import Ledger
+from weeping_angel.cli import main
+from weeping_angel.ledger import Ledger
 
 SAMPLE_MFT = Path(__file__).resolve().parents[1] / "examples" / "data" / "sample.mft"
 
