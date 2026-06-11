@@ -190,6 +190,8 @@ baseline agents.
 
 - Run it on Kaggle: https://www.kaggle.com/code/jaq2347/weeping-angel-notebook
 - Run it locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
+- For an official hosted competition, [`kaggle/contrib/`](kaggle/contrib/) has the
+  merge-ready `kaggle-environments` env package and a contribution + pitch guide.
 
 ## Layout
 

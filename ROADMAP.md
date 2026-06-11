@@ -105,8 +105,10 @@ MFT adapter emits them with `--format ecs|ocsf`.
 
 - JS/HTML renderer so the Kaggle notebook shows an animated replay
   (`html_renderer` is currently empty). (M)
-- Hosted competition: contribute the env upstream to Kaggle/kaggle-environments
-  and pitch it, or run a community code-competition with a fixed opponent pool. (L)
+- Hosted competition: the merge-ready env package and the contribution + pitch
+  guide are in `kaggle/contrib/` (upstream layout: spec JSON, agents, tests, JS
+  renderer). Remaining work is opening the PR to Kaggle/kaggle-environments and
+  pitching them to host it -- gated on their interest. (L)
 - DONE: staging-cost mechanic, Bayesian (Thompson-sampling) blue, mixed-strategy
   persistent red. In the `quantumlock` arena the mechanic is opt-in (`arm_ticks`,
   default off); the published Kaggle env turns it on by default (`armTicks=3`) so
