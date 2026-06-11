@@ -107,9 +107,10 @@ MFT adapter emits them with `--format ecs|ocsf`.
   (`html_renderer` is currently empty). (M)
 - Hosted competition: contribute the env upstream to Kaggle/kaggle-environments
   and pitch it, or run a community code-competition with a fixed opponent pool. (L)
-- DONE: staging-cost mechanic (opt-in `arm_ticks`), Bayesian (Thompson-sampling)
-  blue, mixed-strategy persistent red. The mechanic is off by default so the
-  published Kaggle env is unaffected.
+- DONE: staging-cost mechanic, Bayesian (Thompson-sampling) blue, mixed-strategy
+  persistent red. In the `quantumlock` arena the mechanic is opt-in (`arm_ticks`,
+  default off); the published Kaggle env turns it on by default (`armTicks=3`) so
+  the hosted competition is the deep game.
 - DONE: a learned agent baseline (`quantumlock/learn.py`) -- a linear coverage
   policy trained by Evolution Strategies, pure stdlib (no deep-learning deps). It
   beats random and matches the hand-tuned inference agent, and proves the arena is

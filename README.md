@@ -62,7 +62,7 @@ python -m quantumlock.adapters.mft examples/data/sample.mft          # parse a r
 python -m quantumlock.efficacy                # precision/recall over a labeled corpus
 python examples/arena_demo.py                 # adversarial arena: Angels vs the recorder
 pip install -e . && weeping-angel scan examples/data/sample.mft   # the unified CLI
-pip install -e ".[test]" && pytest -q         # 113 tests
+pip install -e ".[test]" && pytest -q         # 115 tests
 ```
 
 For the full argument and design walkthrough, see [`docs/WRITEUP.md`](docs/WRITEUP.md).
@@ -134,43 +134,21 @@ Timestomp). Sigma rules and a Sysmon config keyed on Sysmon Event ID 2
 
 ## Implemented vs design-only
 
-Working, tested code in this repo (Python, plus Go for the recorder):
+Everything below is working, tested code (Python, plus Go for the recorder); the
+[Layout](#layout) is the per-file map. The highlights:
 
-- `quantumlock/ledger.py`, tamper-evident hash-chained log (JSONL on disk), plus
-  `quantumlock/anchor.py`, HMAC-authenticated off-box head anchor that closes
-  the tail-truncation gap.
-- `recorder/`, the out-of-band collector in Go: watches file ops, builds the
-  same hash chain, and writes the same JSONL ledger the Python detector reads.
-  Go and Python compute byte-identical SHA-256 chains (cross-language verified).
-- `range/`, a Terraform test range (Docker provider) that provisions a fleet of
-  endpoint containers running the recorder, with a harness that injects
-  timestomps and scans the collected ledgers end to end.
-- `quantumlock/witnesses.py` and `quantumlock/detector.py`, the witness model
-  and seven ATT&CK-tagged divergence rules.
-- `quantumlock/response.py`, a rules-of-engagement response layer that turns
-  findings into bounded actions (alert/ticket/quarantine/isolate), dry-run by
-  default, gated on corroboration-based confidence, every decision logged to the
-  tamper-evident ledger.
-- `quantumlock/export.py`, renders findings as ECS or OCSF Detection Findings
-  (with the ATT&CK mapping) for SIEM ingestion;
-  `python -m quantumlock.adapters.mft <mft> --format ecs|ocsf` emits JSONL.
-- `quantumlock/paradox.py`, the observed/unobserved state machine with an
-  unreachability proof.
-- `quantumlock/simulator.py`, a deterministic filesystem and Angel simulator.
-- `quantumlock/adapters/mft.py`, parses a raw NTFS `$MFT` (FILE records, Update
-  Sequence Array fixups, FILETIME decoding) and runs the rules on it;
-  `adapters/mft_csv.py` does the same from an MFTECmd CSV export;
-  `adapters/usn.py` parses the USN journal (`$J`) for the true timeline, so R2
-  runs on a real journal.
-- `quantumlock/efficacy.py`, precision/recall over a labeled corpus.
-- `quantumlock/arena.py`, an adversarial bot-vs-bot game (Angels vs the
-  out-of-band recorder under a coverage budget) with baseline, inference, and
-  Bayesian (Thompson-sampling) agents, plus an opt-in staging-cost mechanic.
-- `quantumlock/learn.py`, a learned arena agent: a linear coverage policy trained
-  by Evolution Strategies (`weeping-angel learn`), the dependency-free RL baseline.
-- `kaggle/weeping_angel.py`, the same game packaged as a
-  [kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation
-  (`pip install -e ".[arena]"`), ready for a bot-vs-bot competition.
+- **Detection:** seven ATT&CK-tagged rules over real `$MFT` and USN-journal
+  binary parsers (and an MFTECmd-CSV adapter), with a precision/recall harness.
+- **Tamper-evident record:** a hash-chained JSONL ledger with an off-box HMAC
+  anchor, written identically by the Python detector and the Go `recorder/`:
+  byte-identical SHA-256 chains, verified cross-language.
+- **Response and integration:** a dry-run rules-of-engagement response layer,
+  ECS/OCSF exporters for SIEM ingestion, and Sigma/Sysmon detections.
+- **Adversary modelling:** the paradox proof, a deterministic simulator, and an
+  adversarial arena with heuristic, Bayesian, and Evolution-Strategies-trained
+  agents (also packaged as the Kaggle competition below).
+- **Range:** Terraform (Docker) that provisions a recorder fleet and runs the
+  timestomp scenario end to end.
 
 Design-only (documented, not executable here): the kernel minifilter,
 hypervisor/VMI vantage point, and live USN collection. The real data source for
@@ -202,10 +180,13 @@ each witness is spelled out in
 
 The arena is also packaged as a
 [kaggle-environments](https://github.com/Kaggle/kaggle-environments) simulation in
-[`kaggle/`](kaggle/), with a runnable notebook
+[`kaggle/`](kaggle/), with a self-contained notebook
 ([`kaggle/weeping_angel_arena.ipynb`](kaggle/weeping_angel_arena.ipynb)) that
-installs the env, plays an episode, and scores the built-in agents against each
-other.
+defines the env inline (no dataset to attach), plays an episode, and scores the
+built-in agents against each other. The competition env is the deep game: a
+staging-cost mechanic (an Angel must emit activity before it can stomp) so there
+is no dominant strategy, plus Bayesian (Thompson-sampling) and mixed-strategy
+baseline agents.
 
 - Run it on Kaggle: https://www.kaggle.com/code/jaq2347/weeping-angel-notebook
 - Run it locally: `pip install -e ".[arena]" && python examples/kaggle_arena.py`
@@ -237,7 +218,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo, arena, and kaggle runners; data/ ($MFT + USN samples)
 docs/                   # DESIGN, THREAT_MODEL, WRITEUP, LAB, timeline.svg
-tests/                  # 113 tests, incl. Hypothesis property tests
+tests/                  # 115 tests, incl. Hypothesis property tests
 ```
 
 ## License

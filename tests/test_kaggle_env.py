@@ -26,6 +26,24 @@ def test_episode_runs_and_terminates():
     assert [s.status for s in final] == ["DONE", "DONE"]
 
 
+def test_new_agents_run():
+    final = _make(seed=1).run(["bayes_blue", "mixed_red"])[-1]
+    assert [s.status for s in final] == ["DONE", "DONE"]
+
+
+def test_staging_cost_blunts_an_unarmed_rush():
+    # rush_red only attempts on tick <= 1; with a staging cost it can't arm in
+    # time, so it corrupts far fewer files than with the cost off.
+    def corrupted(arm):
+        total = 0
+        for seed in range(20):
+            final = _make(seed=seed, armTicks=arm).run(["random_blue", "rush_red"])[-1]
+            total += sum(1 for a in final[1].observation.angels if a[2] == 2)
+        return total
+
+    assert corrupted(3) < corrupted(0)
+
+
 def test_reward_is_zero_sum():
     final = _make(seed=2).run(["sweep_blue", "rush_red"])[-1]
     assert final[0].reward == -final[1].reward
