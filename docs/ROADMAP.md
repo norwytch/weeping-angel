@@ -19,7 +19,14 @@ strict priority. Rough effort is noted as S/M/L.
   packaged as a kaggle-environments sim and published as a Kaggle notebook.
 - Response / rules-of-engagement layer (`weeping_angel/response.py`): findings to
   bounded actions, dry-run default, confidence gate, every decision logged to the
-  tamper-evident ledger. (Priority 2)
+  tamper-evident ledger *before* it executes (cap-before-execute, so a held or
+  failed action can never have unrecorded side effects). (Priority 2)
+- Content-aware triage (`weeping_angel/triage/`): reads the evidence behind a
+  finding (who set the time, which direction, how round) and can only ever
+  *de-escalate* the responder. Two assessors behind one interface: a transparent
+  linear scorer (pure stdlib, the default and offline fallback) and an optional
+  Claude ReAct agent (`TriageAgent`, reason -> tool -> observe loop over read-only
+  evidence tools, `[agent]` extra) that falls back to the scorer with no key.
 - Go recorder (`recorder/`): out-of-band host collector that builds the same
   hash chain and shared JSONL ledger the Python detector reads; Go and Python
   compute byte-identical SHA-256 chains, verified both directions. (Priority 1)
@@ -30,7 +37,9 @@ strict priority. Rough effort is noted as S/M/L.
   Detection Findings (with the ATT&CK mapping) for SIEM ingestion; the MFT
   adapter has a `--format ecs|ocsf` flag. (Priority 4)
 - CI (ruff, mypy, bandit, pytest; plus go vet/test and terraform fmt/validate),
-  security review (LOW-1/LOW-3 fixed).
+  full-repo security reviews (response executor ordering and 0600 ledger
+  permissions fixed; the LLM triage agent reviewed and bounded by the
+  downgrade-only invariant).
 - USN journal binary parser (`weeping_angel/adapters/usn.py`): parses
   `$Extend\$UsnJrnl:$J` (USN_RECORD_V2, reason flags, FILETIME), maps it onto the
   ledger so R2 runs on a real journal; `scan_with_usn` combines MFT + USN.
@@ -49,7 +58,7 @@ strict priority. Rough effort is noted as S/M/L.
 
 Ranked. Each closes a capability the framework currently only hand-waves.
 
-### 1. Go recorder agent — DONE
+### 1. Go recorder agent - DONE
 
 Shipped as `recorder/` (see Done above): a Go collector with `watch` / `replay`
 / `verify` subcommands that builds the same hash chain and shared JSONL ledger
@@ -58,14 +67,14 @@ the Python detector reads. Cross-language hashing is verified both directions in
 follow-ups: swap the poll-based watcher for fsnotify, and let the Python
 detector run rules directly on a recorder-produced ledger.
 
-### 2. Response / rules-of-engagement layer — DONE
+### 2. Response / rules-of-engagement layer - DONE
 
 Shipped as `weeping_angel/response.py` (see Done above): `ResponsePolicy` maps
 findings to a bounded action under an RoE config, dry-run by default, gated on
 corroboration-based confidence, with every decision appended to the
 tamper-evident ledger.
 
-### 3. Terraform range — DONE
+### 3. Terraform range - DONE
 
 Shipped as `range/` (see Done above): Docker-provider Terraform that builds the
 recorder image and runs a fleet of endpoint containers, plus `scenario.py` which
@@ -73,7 +82,7 @@ injects a timestomp on each and scans the collected ledgers. `terraform
 fmt`/`validate` run in CI. Follow-ups: a cloud-VM variant, and exercising it
 against a live daemon in CI (validate-only today).
 
-### 4. Platform integration: OCSF/ECS exporter — DONE
+### 4. Platform integration: OCSF/ECS exporter - DONE
 
 Shipped as `weeping_angel/export.py` (see Done above): `ecs_event`, `ocsf_finding`,
 and `to_jsonl` render findings (with the ATT&CK mapping) for SIEM ingestion; the

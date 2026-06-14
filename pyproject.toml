@@ -32,9 +32,13 @@ dev = ["pytest>=7", "hypothesis>=6", "ruff>=0.5", "mypy>=1.8", "bandit>=1.7", "p
 # The kaggle-environments wrapper (kaggle/weeping_angel.py) is optional; its
 # tests importorskip when this isn't installed, so CI stays light.
 arena = ["kaggle-environments>=1.14"]
+# The ReAct triage agent (weeping_angel.triage.TriageAgent) is optional; without
+# it the triage layer uses its deterministic linear scorer, so the core stays
+# pure-stdlib and CI needs no API key.
+agent = ["anthropic>=0.40"]
 
 [tool.setuptools]
-packages = ["weeping_angel", "weeping_angel.adapters"]
+packages = ["weeping_angel", "weeping_angel.adapters", "weeping_angel.triage"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

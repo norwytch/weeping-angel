@@ -142,8 +142,11 @@ Everything below is working, tested code (Python, plus Go for the recorder); the
 - **Tamper-evident record:** a hash-chained JSONL ledger with an off-box HMAC
   anchor, written identically by the Python detector and the Go `recorder/`:
   byte-identical SHA-256 chains, verified cross-language.
-- **Response and integration:** a dry-run rules-of-engagement response layer,
-  ECS/OCSF exporters for SIEM ingestion, and Sigma/Sysmon detections.
+- **Response and integration:** a dry-run rules-of-engagement response layer
+  (every autonomous action is capped and ledger-logged before it runs), a
+  content-aware `triage/` layer that can only ever *de-escalate* it (a transparent
+  linear scorer by default, an optional Claude ReAct agent behind the same
+  interface), ECS/OCSF exporters for SIEM ingestion, and Sigma/Sysmon detections.
 - **Adversary modelling:** the paradox proof, a deterministic simulator, and an
   adversarial arena with heuristic, Bayesian, and Evolution-Strategies-trained
   agents (also packaged as the Kaggle competition below).
@@ -204,6 +207,7 @@ weeping_angel/            # the package: detection logic and the simulation that
   paradox.py            # observed/unobserved state machine + unreachability proof
   simulator.py          # filesystem sim, observation oracle, Angel agents
   response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
+  triage/               # content-aware, downgrade-only triage (linear scorer + optional ReAct agent)
   export.py             # render findings as ECS / OCSF for SIEM ingestion
   timeline.py           # forged-vs-true timeline as a standalone SVG
   cli.py                # unified `weeping-angel` command-line entry point
@@ -220,7 +224,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo, arena, and kaggle runners; data/ ($MFT + USN samples)
 docs/                   # DESIGN, THREAT_MODEL, WRITEUP, LAB, timeline.svg
-tests/                  # 115 tests, incl. Hypothesis property tests
+tests/                  # 133 tests, incl. Hypothesis property tests
 ```
 
 ## License

@@ -46,8 +46,18 @@ In scope, in rough order of sensitivity:
   are in scope.
 - **Response / rules-of-engagement layer** (`weeping_angel/response.py`). Any
   path that lets an action execute outside the configured rules of engagement,
-  bypasses the protected-file or dry-run guard, or causes an action to run
-  without a corresponding ledger entry.
+  bypasses the protected-file, dry-run, or triage cap, or causes an action to run
+  without a corresponding ledger entry. The cap (protected-file and triage hold)
+  is applied before execution by design; a path that executes an un-capped action
+  and only relabels the result afterwards would be in scope.
+- **Triage agent** (`weeping_angel/triage/`). The optional Claude ReAct agent
+  reasons over evidence and can recommend holding a response. Two properties are
+  load-bearing and in scope: it must only ever *de-escalate* (never raise an
+  action or cause execution), and an API/transport failure or malformed model
+  output must degrade to the deterministic linear scorer rather than fail open.
+  Evidence strings (file ids, actor names) are attacker-influenced and reach the
+  model, so prompt-injection that flips the agent toward a *hold* is expected; the
+  downgrade-only invariant is what bounds it (see Operating notes).
 - **Ledger and anchor** (`weeping_angel/ledger.py`, `weeping_angel/anchor.py`,
   and the Go recorder in `recorder/`). Hash-chain or HMAC weaknesses that let a
   record be edited, reordered, or truncated without detection, or any divergence
@@ -80,3 +90,13 @@ hostile data, keep these in mind:
   anchor). An attacker with write access to the local ledger file can still
   truncate the tail; the anchor is what closes that gap. Ledger files are created
   with owner-only (0600) permissions.
+- The triage agent is **opt-in** (the `[agent]` extra plus an API key); the
+  default linear scorer runs locally and sends nothing off-box. Enabling the agent
+  transmits evidence metadata (file ids, rule names, timestamps, actor names) to
+  the LLM provider, so treat it as you would any third-party analytics path and
+  do not enable it on data you may not disclose. Its influence is bounded by
+  construction: it only reads evidence and can only ask the responder to hold, so
+  the worst case of a mis-assessment or a prompt-injection in the evidence is a
+  missed auto-response that a human still sees in the alert, never an escalation.
+  Treat agent holds as advisory, and keep a human in the loop before relying on
+  them to suppress a response.

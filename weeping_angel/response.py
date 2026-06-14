@@ -25,9 +25,28 @@ import itertools
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import IntEnum
+from typing import Protocol
 
 from .detector import Finding
 from .ledger import Ledger
+
+
+class TriageAdvice(Protocol):
+    """Structural type for a triage opinion the policy may consult. Kept as a
+    Protocol so the core response layer does not import the optional triage
+    package -- anything that recommends a hold and can serialize itself fits.
+    The only thing triage is permitted to do is recommend *more* caution.
+
+    Members are read-only properties so a frozen dataclass (the triage report)
+    satisfies the Protocol."""
+
+    @property
+    def recommend_hold(self) -> bool: ...
+    @property
+    def disposition(self) -> str: ...
+    @property
+    def benign_likelihood(self) -> float: ...
+    def to_event(self) -> dict: ...
 
 # Confidence a single finding contributes, by severity. Corroboration (multiple
 # distinct rules on one file) raises it from there.
@@ -135,7 +154,12 @@ class ResponsePolicy:
         ]
         return max(eligible, default=Action.NONE)
 
-    def decide(self, file_id: str, findings: Iterable[Finding]) -> ResponseDecision:
+    def decide(
+        self,
+        file_id: str,
+        findings: Iterable[Finding],
+        triage: TriageAdvice | None = None,
+    ) -> ResponseDecision:
         findings = list(findings)
         conf = confidence(findings)
         action = self._choose(conf)
@@ -146,7 +170,22 @@ class ResponsePolicy:
             reason += f"; {action.name} blocked on protected file, downgraded to {downgraded.name}"
             action = downgraded
 
-        executed = (not self.roe.dry_run) and action != Action.NONE
+        # Triage can only ever cap the action *down*, and the cap is applied here
+        # -- before `executed` is computed and before any executor runs -- so the
+        # invariant holds for real side effects, not just the returned object.
+        held = False
+        if triage is not None and triage.recommend_hold and action > Action.ALERT:
+            downgraded = Action.ALERT if Action.ALERT in self.roe.allowed_actions else Action.NONE
+            reason += (
+                f"; triage held ({triage.disposition}, "
+                f"benign_likelihood={triage.benign_likelihood:.2f}), "
+                f"{action.name} downgraded to {downgraded.name}"
+            )
+            action = downgraded
+            held = True
+
+        # A held action is surfaced for a human, never auto-executed.
+        executed = (not self.roe.dry_run) and action != Action.NONE and not held
         decision = ResponseDecision(
             file_id=file_id,
             action=action,
@@ -157,14 +196,18 @@ class ResponsePolicy:
             reason=reason,
         )
 
-        # Record the decision before acting, so an action can never have
-        # side effects without a durable ledger entry first.
-        if self.ledger is not None and action != Action.NONE:
-            self.ledger.append(decision.to_event(), recorded_at=self._now())
+        # Record the rationale, then the decision, before acting -- so an action
+        # can never have side effects without a durable ledger entry first, and
+        # the "why we backed off" is as auditable as the "why we acted".
+        if self.ledger is not None:
+            if triage is not None and findings:
+                self.ledger.append(triage.to_event(), recorded_at=self._now())
+            if action != Action.NONE:
+                self.ledger.append(decision.to_event(), recorded_at=self._now())
 
-        # Execute last, handing the executor the real decision (with the rules
-        # that justified it). If it fails, the decision is already recorded;
-        # log the failure too, then re-raise so the caller learns of it.
+        # Execute last, handing the executor the real (already-capped) decision.
+        # If it fails, the decision is already recorded; log the failure too,
+        # then re-raise so the caller learns of it.
         if executed and action in self.executors:
             try:
                 self.executors[action](decision)
