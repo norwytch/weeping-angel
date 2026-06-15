@@ -1,13 +1,27 @@
 """A labeled corpus of per-file evidence, and the precision/recall scoring a
 rule set is measured against.
 
-The corpus mirrors the classes in :mod:`weeping_angel.efficacy` -- clean files,
-benign timestamp-setting (archivers / restore / ``cp -p``), and three timestomp
-variants -- but expresses each case as a flat feature dict (the quantities a
+The corpus extends the classes in :mod:`weeping_angel.efficacy` -- clean files,
+benign timestamp-setting, and timestomp variants -- but expresses each case as a
+flat feature dict (the quantities a
 :class:`~weeping_angel.ruleforge.rule.CandidateRule` may reference) rather than a
-full detector. A rule set is scored with the same confusion-matrix metrics the
-efficacy harness reports, so "did the agent's rules help" is measured the same
-way the hand-written rules are.
+full detector, and adds a class that needs a *conjunction* to catch cleanly. A
+rule set is scored with the same confusion-matrix metrics the efficacy harness
+reports, so "did the agent's rules help" is measured the same way the hand-written
+rules are.
+
+``stomp_widen`` is the headroom case. It widens the apparent active window on both
+ends (birth pushed earlier *and* modified pushed later, both by a moderate amount)
+without any single impossible value:
+
+* a benign ``birth_skew`` file (FS migration / timezone bug) also has its birth
+  moderately early, so ``si_created < fn_created`` alone false-positives on it;
+* a benign ``restore_postdate`` file also has its modified time after the true
+  last write, so ``si_modified > journal_last`` alone false-positives on it.
+
+So no single comparison separates ``stomp_widen`` from benign without a false
+positive -- only the conjunction of the two does. A greedy single-clause search
+plateaus; an agent that can propose ``all_of([...])`` closes the gap.
 """
 
 from __future__ import annotations
@@ -21,31 +35,60 @@ from .rule import CandidateRule
 # One labeled case: the per-file feature dict plus its kind and ground-truth label.
 Case = tuple[dict[str, float], str, str]  # (features, kind, label)
 
-KINDS = ("clean", "benign_setinfo", "stomp_backdate", "stomp_subsecond", "stomp_future")
+KINDS = (
+    "clean", "benign_setinfo", "birth_skew", "restore_postdate",
+    "stomp_backdate", "stomp_subsecond", "stomp_future", "stomp_widen",
+)
+
+_MODERATE = (20_000, 80_000)        # a "moderate" shift, in whole seconds
+_GROSS = (1_000_000, 100_000_000)   # a gross backdate, in whole seconds
 
 
 def _features(rng: random.Random, kind: str) -> tuple[dict[str, float], str]:
-    """Build one case's features, mirroring efficacy._make_case but as a dict."""
-    birth = rng.uniform(1.6e9, 1.7e9) + rng.uniform(0.05, 0.95)
-    write = birth + rng.uniform(10, 1e6) + rng.uniform(0.05, 0.95)
-    now = write + rng.uniform(10, 1e6)
+    """Build one case's features. Shifts are whole-second integers so they
+    preserve the sub-second fractional precision of genuine times (only a real
+    stomp zeroes it out, which is what `whole_second` keys on)."""
+    # Exact-integer base + a bounded fraction, shifted only by whole seconds, so
+    # every genuine time keeps a clearly non-zero sub-second part (frac in
+    # [0.1, 0.9]). Only an int() stomp zeroes it, which is what `whole_second` keys
+    # on -- a wrapping fraction would make that check randomly false-positive.
+    epoch_base = rng.randint(1_600_000_000, 1_700_000_000)
+    birth = epoch_base + rng.uniform(0.1, 0.9)
+    write = birth + rng.randint(10, 1_000_000)
+    now = write + rng.randint(10, 1_000_000)
+    now_far = write + rng.randint(200_000, 1_000_000)  # room for a postdate below now
     base = {"fn_created": birth, "journal_first": birth, "journal_last": write, "now": now}
 
     if kind == "clean":
         return {**base, "si_created": birth, "si_modified": write}, BENIGN
     if kind == "benign_setinfo":
         # restore/copy sets a plausible time: >= true last write, <= now, birth kept
-        plausible = rng.uniform(write, now)
+        plausible = write + rng.randint(1, max(1, int(now - write)))
         return {**base, "si_created": birth, "si_modified": plausible}, BENIGN
+    if kind == "birth_skew":
+        # benign: birth moderately early (FS migration / tz bug), modified normal
+        return {**base, "si_created": birth - rng.randint(*_MODERATE), "si_modified": write}, BENIGN
+    if kind == "restore_postdate":
+        # benign: a tool sets modified moderately after the true last write
+        si_mod = write + rng.randint(*_MODERATE)
+        far = {**base, "now": now_far}
+        return {**far, "si_created": birth, "si_modified": si_mod}, BENIGN
     if kind == "stomp_backdate":
-        forged_c = birth - rng.uniform(1e6, 1e8)
-        forged_m = forged_c + rng.uniform(1, 1e5)
+        forged_c = birth - rng.randint(*_GROSS)
+        forged_m = forged_c + rng.randint(1, 100_000)
         return {**base, "si_created": forged_c, "si_modified": forged_m}, MALICIOUS
     if kind == "stomp_subsecond":
         si = {"si_created": float(int(birth)), "si_modified": float(int(write))}
         return {**base, **si}, MALICIOUS
     if kind == "stomp_future":
-        return {**base, "si_created": birth, "si_modified": now + rng.uniform(1e3, 1e7)}, MALICIOUS
+        si_mod = now + rng.randint(1000, 10_000_000)
+        return {**base, "si_created": birth, "si_modified": si_mod}, MALICIOUS
+    if kind == "stomp_widen":
+        # malicious: birth pushed earlier AND modified pushed later, both moderate;
+        # neither shift alone separates it from birth_skew / restore_postdate.
+        si = {"si_created": birth - rng.randint(*_MODERATE),
+              "si_modified": write + rng.randint(*_MODERATE)}
+        return {**base, "now": now_far, **si}, MALICIOUS
     raise ValueError(kind)
 
 

@@ -16,10 +16,27 @@ against the labeled corpus with precision/recall, read the result, revise.
 3. `commit_rule` adds a rule that gains true positives with zero new false
    positives; `finish` stops when recall and precision clear the bar.
 
-The corpus mirrors `weeping_angel.efficacy`: clean files, benign
-timestamp-setting (backup/restore/`cp -p`, which must not be flagged), and three
-timestomp variants (backdate, sub-second, future). No single rule catches all
-three, so the agent has to reason about coverage and build a small rule set.
+The corpus extends `weeping_angel.efficacy`: clean files, benign timestamp-setting
+(backup/restore/`cp -p`, which must not be flagged), and timestomp variants. No
+single rule catches every variant, so the agent has to reason about coverage and
+build a small rule set.
+
+## The headroom: where reasoning beats brute force
+
+One malicious class, `stomp_widen`, is the point. It pushes the apparent birth a
+little earlier *and* the modified time a little later, with no single impossible
+value. A benign `birth_skew` file (FS migration / timezone bug) also has an early
+birth, so `si_created < fn_created` alone false-positives on it; a benign
+`restore_postdate` file also has a late modified time, so `si_modified >
+journal_last` alone false-positives on it. **No single comparison separates
+`stomp_widen` from benign without a false positive.**
+
+The greedy miner only ORs single clauses, so it plateaus at recall 0.75 (it cannot
+catch `stomp_widen` cleanly). The agent can propose a *conjunction* whose two
+clauses are individually impure but jointly clean, and close the gap to 1.0. That
+is the case where an agent's reasoning beats enumeration: the conjunction space is
+combinatorial (pairs, triples of clauses), so the greedy baseline doesn't search
+it, but the agent reasons its way straight to the right combination.
 
 ## Rules are data, not code
 
@@ -28,12 +45,16 @@ A rule is a small validated object, never executable Python:
 ```python
 {"kind": "compare", "left": "si_created", "op": "<", "right": "fn_created"}  # backdated $SI
 {"kind": "whole_second", "field": "si_modified"}                            # forged round time
+{"kind": "all_of", "clauses": [                                             # a conjunction
+    {"kind": "compare", "left": "si_created",  "op": "<", "right": "fn_created"},
+    {"kind": "compare", "left": "si_modified", "op": ">", "right": "journal_last"}]}
 ```
 
-`parse_rule` validates every spec against an allowlist of fields and operators,
-so an agent-authored rule can be scored and audited without the framework ever
-running model output as code. Fields: `si_created`, `si_modified`, `fn_created`,
-`journal_first`, `journal_last`, `now`.
+`parse_rule` validates every spec against an allowlist of fields and operators
+(and bounds conjunctions to 2-4 non-nested clauses), so an agent-authored rule can
+be scored and audited without the framework ever running model output as code.
+Fields: `si_created`, `si_modified`, `fn_created`, `journal_first`,
+`journal_last`, `now`.
 
 ## Two engineers, one interface
 

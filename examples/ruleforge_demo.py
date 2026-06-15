@@ -30,6 +30,13 @@ def main() -> None:
         print("\ntrace:")
         for line in result.log:
             print(f"  {line}")
+    if not has_key and not result.met(bar):
+        print(
+            "\nThe greedy miner plateaus: it only ORs single comparisons, and "
+            "stomp_widen is caught by no single clause without a false positive. "
+            "The ReAct agent (run with ANTHROPIC_API_KEY) can propose an all_of "
+            "conjunction to close that gap."
+        )
     print(
         "\nThese are *proposals*: each rule is scored, but promoting one into "
         "detector.py is a human review step."

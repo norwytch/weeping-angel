@@ -31,9 +31,11 @@ strict priority. Rough effort is noted as S/M/L.
   rules*. Runs a closed loop with a real reward signal -- propose a rule (validated
   structured data, never code), score it against the precision/recall corpus,
   commit ones that add coverage with no false positives -- until it clears a bar.
-  A deterministic greedy miner is the baseline and offline fallback; the optional
-  ReAct agent has to beat it. Discovered rules are proposals; promotion into the
-  detector is a human review step.
+  A deterministic greedy miner is the baseline and offline fallback. The grammar
+  includes conjunctions, so the optional ReAct agent can catch a forgery class
+  that no single comparison separates without a false positive (the greedy
+  single-clause miner provably plateaus on it). Discovered rules are proposals;
+  promotion into the detector is a human review step.
 - Go recorder (`recorder/`): out-of-band host collector that builds the same
   hash chain and shared JSONL ledger the Python detector reads; Go and Python
   compute byte-identical SHA-256 chains, verified both directions. (Priority 1)

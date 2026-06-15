@@ -31,17 +31,21 @@ You are a detection-engineering agent for an NTFS timestomping detector. Your jo
 is to discover detection RULES that separate forged timestamps from legitimate \
 ones, measured by precision and recall on a labeled corpus.
 
-A rule is structured data (never code): either a `compare` of two evidence fields \
-with a tolerance, or a `whole_second` check on one field. Call list_fields for the \
-grammar. The corpus has clean files, benign timestamp-setting (backup/restore/cp \
--p, which you must NOT flag), and several timestomp variants you must catch.
+A rule is structured data (never code): a `compare` of two evidence fields with a \
+tolerance, a `whole_second` check on one field, or an `all_of` conjunction of two \
+to four of those. Call list_fields for the grammar. The corpus has clean files, \
+benign timestamp-setting (backup/restore/cp -p, which you must NOT flag), and \
+several timestomp variants you must catch.
 
 Work the closed loop: inspect_corpus to see what's still uncaught, propose a rule \
 and evaluate_rule to score it, commit_rule when it adds true positives with zero \
 new false positives, and repeat until recall and precision clear the bar. A false \
 positive on a benign file is worse than a miss, so never commit a rule that adds \
-one. Call finish when the rule set meets the bar or you can do no better. Prefer \
-the smallest rule set that works."""
+one. Some forgeries are caught by no single comparison without a false positive on \
+some benign file -- when evaluate_rule shows every single clause you try adds a \
+false positive, reach for an `all_of` conjunction whose clauses are individually \
+impure but jointly clean. Call finish when the rule set meets the bar or you can \
+do no better. Prefer the smallest rule set that works."""
 
 
 class RuleEngineerAgent:

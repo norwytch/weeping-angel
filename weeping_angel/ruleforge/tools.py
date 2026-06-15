@@ -18,16 +18,37 @@ from .rule import FIELDS, OPS, CandidateRule, parse_rule
 COMMIT = "commit_rule"
 FINISH = "finish"
 
-_RULE_SCHEMA = {
+_LEAF_SCHEMA = {
     "type": "object",
     "properties": {
         "kind": {"type": "string", "enum": ["compare", "whole_second"]},
+        "left": {"type": "string", "enum": list(FIELDS)},
+        "op": {"type": "string", "enum": list(OPS)},
+        "right": {"type": "string", "enum": list(FIELDS)},
+        "tolerance": {"type": "number"},
+        "field": {"type": "string", "enum": list(FIELDS)},
+    },
+    "required": ["kind"],
+    "additionalProperties": False,
+}
+
+_RULE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "kind": {"type": "string", "enum": ["compare", "whole_second", "all_of"]},
         "name": {"type": "string", "description": "Short human label for the rule."},
         "left": {"type": "string", "enum": list(FIELDS), "description": "compare: left field"},
         "op": {"type": "string", "enum": list(OPS), "description": "compare: operator"},
         "right": {"type": "string", "enum": list(FIELDS), "description": "compare: right field"},
         "tolerance": {"type": "number", "description": "compare: seconds of margin (default 1)"},
         "field": {"type": "string", "enum": list(FIELDS), "description": "whole_second: field"},
+        "clauses": {
+            "type": "array",
+            "items": _LEAF_SCHEMA,
+            "minItems": 2,
+            "maxItems": 4,
+            "description": "all_of: 2-4 compare/whole_second sub-rules, all must fire",
+        },
     },
     "required": ["kind"],
     "additionalProperties": False,
@@ -83,10 +104,17 @@ def describe_fields() -> str:
                 "compare": {"kind": "compare", "left": "<field>", "op": "<op>", "right": "<field>",
                             "tolerance": "<seconds, default 1>"},
                 "whole_second": {"kind": "whole_second", "field": "<field>"},
+                "all_of": {"kind": "all_of", "clauses": ["<compare or whole_second>", "..."],
+                           "note": "fires only when ALL clauses fire; use it when no single "
+                                   "comparison separates a forgery from benign cleanly"},
             },
             "examples": [
                 {"kind": "compare", "left": "si_created", "op": "<", "right": "fn_created"},
                 {"kind": "whole_second", "field": "si_modified"},
+                {"kind": "all_of", "clauses": [
+                    {"kind": "compare", "left": "si_created", "op": "<", "right": "fn_created"},
+                    {"kind": "compare", "left": "si_modified", "op": ">",
+                     "right": "journal_last"}]},
             ],
         }
     )
