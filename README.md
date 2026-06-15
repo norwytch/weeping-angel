@@ -139,6 +139,11 @@ Everything below is working, tested code (Python, plus Go for the recorder); the
 
 - **Detection:** seven ATT&CK-tagged rules over real `$MFT` and USN-journal
   binary parsers (and an MFTECmd-CSV adapter), with a precision/recall harness.
+- **Self-improving detection:** a `ruleforge/` agent that *writes new detection
+  rules*, proposing each as validated structured data (never code) and scoring it
+  against that harness in a closed loop until it clears a precision/recall bar
+  with no false positives (a deterministic miner by default, an optional Claude
+  ReAct agent that has to beat it).
 - **Tamper-evident record:** a hash-chained JSONL ledger with an off-box HMAC
   anchor, written identically by the Python detector and the Go `recorder/`:
   byte-identical SHA-256 chains, verified cross-language.
@@ -208,6 +213,7 @@ weeping_angel/            # the package: detection logic and the simulation that
   simulator.py          # filesystem sim, observation oracle, Angel agents
   response.py           # rules-of-engagement response layer (dry-run, ledger-audited)
   triage/               # content-aware, downgrade-only triage (linear scorer + optional ReAct agent)
+  ruleforge/            # detection-engineering agent: proposes + scores new rules (miner + ReAct agent)
   export.py             # render findings as ECS / OCSF for SIEM ingestion
   timeline.py           # forged-vs-true timeline as a standalone SVG
   cli.py                # unified `weeping-angel` command-line entry point
@@ -224,7 +230,7 @@ kaggle/                 # the arena as a kaggle-environments sim (bot-vs-bot, op
 detections/             # ATT&CK map, Sigma rules, Sysmon config (Event ID 2)
 examples/               # demo, arena, and kaggle runners; data/ ($MFT + USN samples)
 docs/                   # DESIGN, THREAT_MODEL, WRITEUP, LAB, timeline.svg
-tests/                  # 133 tests, incl. Hypothesis property tests
+tests/                  # 145 tests, incl. Hypothesis property tests
 ```
 
 ## License

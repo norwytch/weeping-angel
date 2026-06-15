@@ -27,6 +27,13 @@ strict priority. Rough effort is noted as S/M/L.
   linear scorer (pure stdlib, the default and offline fallback) and an optional
   Claude ReAct agent (`TriageAgent`, reason -> tool -> observe loop over read-only
   evidence tools, `[agent]` extra) that falls back to the scorer with no key.
+- Detection-engineering agent (`weeping_angel/ruleforge/`): *writes new detection
+  rules*. Runs a closed loop with a real reward signal -- propose a rule (validated
+  structured data, never code), score it against the precision/recall corpus,
+  commit ones that add coverage with no false positives -- until it clears a bar.
+  A deterministic greedy miner is the baseline and offline fallback; the optional
+  ReAct agent has to beat it. Discovered rules are proposals; promotion into the
+  detector is a human review step.
 - Go recorder (`recorder/`): out-of-band host collector that builds the same
   hash chain and shared JSONL ledger the Python detector reads; Go and Python
   compute byte-identical SHA-256 chains, verified both directions. (Priority 1)

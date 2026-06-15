@@ -38,7 +38,12 @@ arena = ["kaggle-environments>=1.14"]
 agent = ["anthropic>=0.40"]
 
 [tool.setuptools]
-packages = ["weeping_angel", "weeping_angel.adapters", "weeping_angel.triage"]
+packages = [
+    "weeping_angel",
+    "weeping_angel.adapters",
+    "weeping_angel.triage",
+    "weeping_angel.ruleforge",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -62,6 +62,12 @@ In scope, in rough order of sensitivity:
   and the Go recorder in `recorder/`). Hash-chain or HMAC weaknesses that let a
   record be edited, reordered, or truncated without detection, or any divergence
   between the Go and Python implementations of the canonical hash preimage.
+- **Rule-engineering agent** (`weeping_angel/ruleforge/`). The optional agent
+  proposes detection rules. Rules are validated structured data, never executable
+  code: `parse_rule` rejects anything outside an allowlist of fields and
+  operators, and the framework never runs an agent-authored rule as code. Any path
+  that lets a rule spec escape that validation, or that auto-promotes a proposed
+  rule into the live detector without human review, is in scope.
 - **Findings exporter** (`weeping_angel/export.py`). Injection into the ECS/OCSF
   output that could mislead or exploit a downstream SIEM.
 
